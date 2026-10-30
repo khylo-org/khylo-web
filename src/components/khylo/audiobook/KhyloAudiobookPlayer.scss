@@ -1,0 +1,574 @@
+// Audiobook Now Playing page
+$abp-text: #f4f1ec;
+$abp-text-secondary: #b4aea7;
+$abp-text-muted: #858079;
+$abp-accent: #d97732;
+$abp-surface: #121314;
+$abp-border: rgba(255, 255, 255, 0.07);
+
+.khylo-abp {
+    position: relative;
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 56px 48px 96px;
+    color: $abp-text;
+
+    &__back {
+        position: absolute;
+        top: 12px;
+        left: 40px;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        border: 1px solid $abp-border;
+        background: transparent;
+        color: $abp-text-secondary;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: color 150ms ease, background-color 150ms ease;
+
+        &:hover {
+            color: $abp-text;
+            background: rgba(255, 255, 255, 0.06);
+        }
+    }
+
+    // Player: cover on the left, details and controls on the right
+    &__player {
+        display: grid;
+        grid-template-columns: minmax(220px, 320px) 1fr;
+        gap: 56px;
+        align-items: center;
+        margin-top: 24px;
+    }
+
+    &__cover {
+        aspect-ratio: 2 / 3;
+        width: 100%;
+        border-radius: 10px;
+        overflow: hidden;
+        background: $abp-surface;
+        box-shadow: 0 24px 48px rgba(0, 0, 0, 0.45);
+
+        img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+    }
+
+    &__cover-fallback {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: $abp-text-muted;
+
+        svg {
+            font-size: 4rem;
+        }
+    }
+
+    &__main {
+        display: flex;
+        flex-direction: column;
+        gap: 28px;
+        min-width: 0;
+    }
+
+    &__meta {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    &__kicker {
+        font-size: 0.78rem;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: $abp-text-muted;
+    }
+
+    &__title {
+        margin: 0;
+        font-size: 2.25rem;
+        font-weight: 700;
+        line-height: 1.15;
+        letter-spacing: -0.02em;
+    }
+
+    &__author {
+        margin: 0;
+        font-size: 1.05rem;
+        color: $abp-text-secondary;
+    }
+
+    &__narrator {
+        margin: 0;
+        font-size: 0.88rem;
+        color: $abp-text-muted;
+    }
+
+    // Position within the current part
+    &__slider.MuiSlider-root {
+        color: $abp-accent;
+        height: 4px;
+        padding: 12px 0;
+
+        .MuiSlider-rail {
+            background-color: rgba(255, 255, 255, 0.14);
+            opacity: 1;
+        }
+
+        .MuiSlider-track {
+            border: none;
+        }
+
+        .MuiSlider-thumb {
+            width: 14px;
+            height: 14px;
+            background-color: $abp-text;
+            transition: width 120ms ease, height 120ms ease;
+
+            &::before {
+                box-shadow: none;
+            }
+
+            &:hover,
+            &.Mui-focusVisible,
+            &.Mui-active {
+                box-shadow: 0 0 0 6px rgba(244, 241, 236, 0.12);
+            }
+        }
+    }
+
+    &__times {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.82rem;
+        font-variant-numeric: tabular-nums;
+        color: $abp-text-muted;
+    }
+
+    // Speed | transport | spacer, so the transport stays centered
+    &__controls {
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+        align-items: center;
+    }
+
+    &__transport {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+    }
+
+    &__icon-btn {
+        width: 44px;
+        height: 44px;
+        border: none;
+        border-radius: 50%;
+        background: transparent;
+        color: $abp-text-secondary;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: color 150ms ease, background-color 150ms ease;
+
+        svg {
+            font-size: 1.75rem;
+        }
+
+        &:disabled {
+            opacity: 0.3;
+            cursor: default;
+        }
+
+        &:focus-visible {
+            outline: 2px solid $abp-accent;
+            outline-offset: 2px;
+        }
+
+        &:hover:not(:disabled) {
+            color: $abp-text;
+            background: rgba(255, 255, 255, 0.06);
+        }
+    }
+
+    &__play-btn {
+        width: 64px;
+        height: 64px;
+        border: none;
+        border-radius: 50%;
+        background: $abp-text;
+        color: #0a0b0c;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: transform 120ms ease;
+
+        svg {
+            font-size: 2.2rem;
+        }
+
+        &:hover {
+            transform: scale(1.04);
+        }
+
+        &:active {
+            transform: scale(0.97);
+        }
+    }
+
+    &__speed {
+        position: relative;
+        justify-self: start;
+    }
+
+    &__speed-btn {
+        min-width: 56px;
+        padding: 6px 12px;
+        border-radius: 8px;
+        border: 1px solid $abp-border;
+        background: transparent;
+        color: $abp-text-secondary;
+        font-family: inherit;
+        font-size: 0.88rem;
+        font-weight: 600;
+        font-variant-numeric: tabular-nums;
+        cursor: pointer;
+
+        &:hover {
+            color: $abp-text;
+            border-color: rgba(255, 255, 255, 0.16);
+        }
+    }
+
+    &__speed-menu {
+        position: absolute;
+        bottom: calc(100% + 8px);
+        left: 0;
+        z-index: 5;
+        display: flex;
+        flex-direction: column;
+        min-width: 88px;
+        padding: 6px;
+        border-radius: 10px;
+        border: 1px solid $abp-border;
+        background: #18191a;
+        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+    }
+
+    &__speed-option {
+        padding: 8px 12px;
+        border: none;
+        border-radius: 6px;
+        background: transparent;
+        color: $abp-text-secondary;
+        font-family: inherit;
+        font-size: 0.88rem;
+        text-align: left;
+        cursor: pointer;
+
+        &:hover {
+            background: rgba(255, 255, 255, 0.06);
+            color: $abp-text;
+        }
+
+        &--active {
+            color: $abp-accent;
+            font-weight: 600;
+        }
+    }
+
+    // Whole-book progress
+    &__book-progress {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+    }
+
+    &__book-track {
+        flex: 1;
+        height: 2px;
+        border-radius: 1px;
+        background: rgba(255, 255, 255, 0.1);
+        overflow: hidden;
+    }
+
+    &__book-fill {
+        height: 100%;
+        background: $abp-text-muted;
+    }
+
+    &__book-label {
+        flex-shrink: 0;
+        font-size: 0.8rem;
+        color: $abp-text-muted;
+        font-variant-numeric: tabular-nums;
+    }
+
+    // Parts list
+    &__parts {
+        margin-top: 64px;
+    }
+
+    &__parts-header {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        padding-bottom: 14px;
+        border-bottom: 1px solid $abp-border;
+    }
+
+    &__parts-title {
+        margin: 0;
+        font-size: 1.2rem;
+        font-weight: 700;
+    }
+
+    &__parts-count {
+        font-size: 0.85rem;
+        color: $abp-text-muted;
+    }
+
+    &__part-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
+
+    &__part-index {
+        display: flex;
+        align-items: center;
+        font-size: 0.85rem;
+        font-variant-numeric: tabular-nums;
+        color: $abp-text-muted;
+    }
+
+    &__part-name {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    &__part {
+        width: 100%;
+        display: grid;
+        grid-template-columns: 40px 1fr auto 28px;
+        align-items: center;
+        gap: 16px;
+        padding: 14px 12px;
+        border: none;
+        border-bottom: 1px solid $abp-border;
+        background: transparent;
+        color: $abp-text-secondary;
+        font-family: inherit;
+        font-size: 0.95rem;
+        text-align: left;
+        cursor: pointer;
+        transition: background-color 150ms ease, color 150ms ease;
+
+        &:hover {
+            background: rgba(255, 255, 255, 0.03);
+            color: $abp-text;
+        }
+
+        &--done {
+            color: $abp-text-muted;
+        }
+
+        &--current {
+            color: $abp-text;
+            background: rgba(255, 255, 255, 0.04);
+
+            .khylo-abp__part-index,
+            .khylo-abp__part-name {
+                color: $abp-accent;
+            }
+
+            .khylo-abp__part-name {
+                font-weight: 600;
+            }
+        }
+    }
+
+    &__part-length {
+        font-size: 0.85rem;
+        font-variant-numeric: tabular-nums;
+        color: $abp-text-muted;
+    }
+
+    &__part-state {
+        display: flex;
+        justify-content: flex-end;
+        color: $abp-text-muted;
+
+        svg {
+            font-size: 1.1rem;
+        }
+    }
+
+    // Small animated bars for the part that is playing
+    &__eq {
+        display: inline-flex;
+        align-items: flex-end;
+        gap: 2px;
+        height: 12px;
+
+        i {
+            width: 3px;
+            height: 100%;
+            background: $abp-accent;
+            animation: khylo-abp-eq 900ms ease-in-out infinite;
+
+            &:nth-child(2) {
+                animation-delay: -300ms;
+            }
+
+            &:nth-child(3) {
+                animation-delay: -600ms;
+            }
+        }
+    }
+
+    // Nothing playing
+    &--empty {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        min-height: 60vh;
+        text-align: center;
+    }
+
+    &__empty-icon {
+        font-size: 3rem !important;
+        color: $abp-text-muted;
+    }
+
+    &__empty-title {
+        margin: 6px 0 0;
+        font-size: 1.4rem;
+    }
+
+    &__empty-text {
+        margin: 0;
+        color: $abp-text-muted;
+    }
+
+    &__empty-btn {
+        margin-top: 12px;
+        padding: 10px 20px;
+        border-radius: 8px;
+        border: 1px solid $abp-border;
+        background: transparent;
+        color: $abp-text;
+        font-family: inherit;
+        cursor: pointer;
+
+        &:hover {
+            background: rgba(255, 255, 255, 0.06);
+        }
+    }
+
+    &__play-btn,
+    &__speed-btn,
+    &__speed-option,
+    &__part,
+    &__back {
+        &:focus-visible {
+            outline: 2px solid $abp-accent;
+            outline-offset: 2px;
+        }
+    }
+}
+
+@keyframes khylo-abp-eq {
+    0%,
+    100% {
+        transform: scaleY(0.35);
+    }
+
+    50% {
+        transform: scaleY(1);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .khylo-abp__eq i {
+        animation: none;
+    }
+}
+
+// Tablets and phones: stack the cover above the controls
+@media (max-width: 900px) {
+    .khylo-abp {
+        padding: 56px 16px 80px;
+
+        &__back {
+            left: 16px;
+        }
+
+        &__player {
+            grid-template-columns: 1fr;
+            gap: 28px;
+            justify-items: center;
+        }
+
+        &__cover {
+            width: min(60vw, 260px);
+        }
+
+        &__main {
+            width: 100%;
+        }
+
+        &__meta {
+            text-align: center;
+            align-items: center;
+        }
+
+        &__title {
+            font-size: 1.6rem;
+        }
+
+        // Speed moves below the transport so the row fits a phone
+        &__controls {
+            grid-template-columns: 1fr;
+            justify-items: center;
+            gap: 16px;
+        }
+
+        &__speed {
+            order: 2;
+            justify-self: center;
+        }
+
+        &__controls-spacer {
+            display: none;
+        }
+
+        &__transport {
+            gap: 8px;
+        }
+
+        &__parts {
+            margin-top: 40px;
+        }
+
+        &__part {
+            grid-template-columns: 32px 1fr auto 20px;
+            gap: 12px;
+            padding: 14px 4px;
+        }
+    }
+}

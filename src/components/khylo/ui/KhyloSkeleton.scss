@@ -1,0 +1,54 @@
+.khylo-skeleton {
+    background: #121314;
+    background-image: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0.02) 0%,
+        rgba(255, 255, 255, 0.05) 50%,
+        rgba(255, 255, 255, 0.02) 100%
+    );
+    background-size: 200% 100%;
+    animation: khylo-skeleton-shimmer 2.2s infinite ease-in-out;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    box-sizing: border-box;
+
+    &--text {
+        height: 1.1em;
+        border-radius: 6px;
+        margin-bottom: 0.5em;
+    }
+
+    &--circular {
+        border-radius: 50%;
+    }
+
+    &--card {
+        border-radius: 14px;
+        width: 100%;
+    }
+
+    &--ratio-16-9 {
+        aspect-ratio: 16 / 9;
+    }
+
+    &--ratio-2-3 {
+        aspect-ratio: 2 / 3;
+    }
+
+    &--ratio-1-1 {
+        aspect-ratio: 1 / 1;
+    }
+
+    &--ratio-wide {
+        aspect-ratio: 2.2 / 1;
+    }
+}
+
+@keyframes khylo-skeleton-shimmer {
+    0% {
+        background-position: 200% 0;
+    }
+    100% {
+        background-position: -200% 0;
+    }
+}

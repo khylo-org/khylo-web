@@ -1,0 +1,56 @@
+<p align="center">
+  <img src=".github/khylo-banner.png" alt="Khylo" width="560">
+</p>
+
+<h1 align="center">Khylo Web</h1>
+
+<p align="center">
+  The Khylo web app and server dashboard: watch, listen and read in any browser, and manage your Khylo Server.
+</p>
+
+---
+
+## What's inside
+
+- **A cinematic web app.** Edge-to-edge artwork, title logos, a floating top bar, and clean rows for Continue Watching, Up Next and everything recently added.
+- **Title pages** with cast and crew, trailers, collections, watchlist and watched status.
+- **A sleek video player** with Skip Intro, Skip Credits and Up Next.
+- **Live TV and Khylo TV** with a full program guide, recordings and Multi View (up to four channels at once).
+- **Music, audiobooks and books,** including an in-browser reader.
+- **Home profiles** ("Who's watching?") and kids profiles, plus sign-in codes and QR codes for adding TVs and phones.
+- **The Khylo dashboard** for libraries, users, home profiles, invitations, Live TV setup (with the smart IPTV channel picker), playback and server settings.
+
+## Install Khylo
+
+Most people want the server packages, which include this web app: see the
+[server guides](https://github.com/khylo-org/khylo/tree/main/Install).
+
+## Development
+
+**You need:** Node.js (see `.nvmrc`) and a running [Khylo Server](https://github.com/khylo-org/khylo-server).
+
+```bash
+npm ci
+npm start            # development server on http://localhost:8081
+```
+
+The development server talks to your Khylo Server. Open `http://localhost:8081` and connect to your server's address (for example `http://localhost:8096`).
+
+### Production build
+
+```bash
+npm run build:production
+```
+
+The finished site is written to `dist/`. Serve it with the server, or with any web server in front of it.
+
+### Checks
+
+```bash
+npm run lint
+npx tsc --noEmit
+```
+
+## License
+
+Khylo is free software under the [GNU General Public License v2](LICENSE). It is built on open-source components, including the Jellyfin project, whose copyright notices are kept as the license requires. See [NOTICE.md](NOTICE.md).

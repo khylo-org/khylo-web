@@ -1,0 +1,55 @@
+// Live-specific touches on top of the shared .khylo-hero styles
+.khylo-live-hero {
+    &__live-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #e5484d;
+        box-shadow: 0 0 0 3px rgba(229, 72, 77, 0.25);
+        animation: khylo-live-pulse 2s ease-in-out infinite;
+    }
+
+    &__channel {
+        margin-left: 6px;
+        padding-left: 10px;
+        border-left: 1px solid rgba(255, 255, 255, 0.2);
+        color: #b4aea7;
+    }
+
+    &__later {
+        color: #b4aea7;
+    }
+
+    &__up-next {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: 18px 0 0;
+        font-size: 0.88rem;
+        color: #b4aea7;
+
+        span {
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            color: #858079;
+        }
+    }
+}
+
+@keyframes khylo-live-pulse {
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.45;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .khylo-live-hero__live-dot {
+        animation: none;
+    }
+}

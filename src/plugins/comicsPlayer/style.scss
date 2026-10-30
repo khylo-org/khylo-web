@@ -1,0 +1,48 @@
+#comicsPlayer {
+    background: #000;
+    transition: background-color 300ms ease;
+
+    .slideshowSwiperContainer {
+        position: absolute;
+        inset: 0;
+        top: env(safe-area-inset-top);
+        bottom: env(safe-area-inset-bottom);
+    }
+
+    .slider-zoom-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+    }
+
+    .swiper-slide-img {
+        max-height: 100%;
+        max-width: 100%;
+        height: 100%;
+        width: 100%;
+        object-fit: contain;
+        user-select: none;
+        -webkit-user-drag: none;
+    }
+
+    // Fill width: the page spans the screen and you scroll down it
+    &.comicsPlayer--fitWidth {
+        .swiper-slide {
+            overflow-y: auto;
+            overscroll-behavior: contain;
+        }
+
+        .slider-zoom-container {
+            align-items: flex-start;
+            height: auto;
+            min-height: 100%;
+        }
+
+        .swiper-slide-img {
+            height: auto;
+            max-height: none;
+            object-fit: initial;
+        }
+    }
+}

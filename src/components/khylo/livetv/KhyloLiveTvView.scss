@@ -1,0 +1,316 @@
+// Live TV: extras on top of the Live Channels guide styles (KhyloLiveGuide.scss)
+$text: #f4f1ec;
+$text-secondary: #b4aea7;
+$text-muted: #858079;
+$accent: #d97732;
+$record: #e5484d;
+$border: rgba(255, 255, 255, 0.06);
+
+.khylo-livetv {
+    &__multiview-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin-left: auto;
+        padding: 7px 14px;
+        border: 1px solid rgba(217, 119, 50, 0.5);
+        border-radius: 999px;
+        background: rgba(217, 119, 50, 0.12);
+        color: $text;
+        font: inherit;
+        font-size: 0.85rem;
+        font-weight: 600;
+        cursor: pointer;
+
+        svg {
+            font-size: 1rem;
+            color: $accent;
+        }
+
+        &:hover { background: rgba(217, 119, 50, 0.22); }
+    }
+
+    &__rec-icon {
+        margin-right: 4px;
+        font-size: 0.7rem !important;
+        color: $record;
+        vertical-align: 1px;
+    }
+
+    // Category tabs and channel search, above the grid
+    &__filters {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-bottom: 16px;
+    }
+
+    &__search {
+        flex: 0 1 260px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 7px 12px;
+        border: 1px solid $border;
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.04);
+        color: $text-muted;
+
+        &:focus-within {
+            border-color: rgba(217, 119, 50, 0.6);
+        }
+
+        svg {
+            font-size: 1.1rem;
+        }
+
+        input {
+            flex: 1;
+            min-width: 0;
+            border: none;
+            outline: none;
+            background: transparent;
+            color: $text;
+            font-family: inherit;
+            font-size: 0.88rem;
+
+            &::placeholder {
+                color: $text-muted;
+            }
+        }
+    }
+
+    &__none {
+        padding: 40px 0;
+        color: $text-muted;
+        text-align: center;
+    }
+
+    &__program-rec {
+        flex-shrink: 0;
+        font-size: 0.7rem !important;
+        color: $record;
+    }
+
+    &__more {
+        display: flex;
+        justify-content: center;
+        margin-top: 20px;
+    }
+
+    &__setup-link {
+        margin-top: 8px;
+        padding: 10px 20px;
+        border-radius: 10px;
+        background: $accent;
+        color: #fff;
+        font-weight: 700;
+        text-decoration: none;
+    }
+}
+
+.khylo-livetv-hero {
+    &__channel-logo {
+        max-width: 160px;
+        max-height: 64px;
+        margin-bottom: 12px;
+        object-fit: contain;
+    }
+
+    &__recording {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        margin-left: 10px;
+        color: $record;
+        font-weight: 700;
+
+        svg {
+            font-size: 0.75rem;
+        }
+    }
+
+    &__star-on {
+        color: $accent;
+    }
+}
+
+.khylo-livetv-drawer {
+    &__logo {
+        max-width: 120px;
+        max-height: 48px;
+        margin-bottom: 10px;
+        object-fit: contain;
+    }
+
+    &__when {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin: 0 0 12px;
+        color: $text-secondary;
+        font-size: 0.9rem;
+        font-weight: 600;
+    }
+
+    &__rating {
+        padding: 1px 6px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 4px;
+        font-size: 0.72rem;
+    }
+
+    &__tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-bottom: 18px;
+    }
+
+    &__tag {
+        padding: 3px 9px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.06);
+        color: $text-secondary;
+        font-size: 0.74rem;
+        font-weight: 600;
+    }
+
+    &__record {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-top: 12px;
+    }
+
+    &__rec-on {
+        color: $record;
+    }
+
+    &__error {
+        margin: 10px 0 0;
+        color: #e5a00d;
+        font-size: 0.85rem;
+    }
+
+    &__overview {
+        margin: 0;
+        color: $text-secondary;
+        font-size: 0.92rem;
+        line-height: 1.6;
+    }
+}
+
+.khylo-livetv-recordings {
+    &__empty {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        padding: 60px 16px;
+        color: $text-muted;
+        text-align: center;
+
+        svg {
+            font-size: 2.2rem;
+            color: $record;
+            opacity: 0.6;
+        }
+
+        h2 {
+            margin: 6px 0 0;
+            color: $text;
+            font-size: 1.25rem;
+        }
+
+        p {
+            max-width: 420px;
+            margin: 0;
+        }
+    }
+
+    &__section {
+        margin-bottom: 32px;
+    }
+
+    &__title {
+        margin: 0 0 12px;
+        font-size: 1.05rem;
+        font-weight: 700;
+    }
+
+    &__list {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        border: 1px solid $border;
+        border-radius: 14px;
+        overflow: hidden;
+    }
+
+    &__row {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 12px 16px;
+        border-bottom: 1px solid $border;
+
+        &:last-child {
+            border-bottom: none;
+        }
+    }
+
+    &__when {
+        flex: 0 0 170px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        color: $text-secondary;
+        font-size: 0.85rem;
+        font-weight: 600;
+        font-variant-numeric: tabular-nums;
+
+        svg {
+            font-size: 1rem;
+        }
+    }
+
+    &__what {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    &__name {
+        overflow: hidden;
+        font-weight: 700;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    &__sub {
+        color: $text-muted;
+        font-size: 0.8rem;
+    }
+
+    &__grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 20px;
+    }
+}
+
+@media (max-width: 600px) {
+    .khylo-livetv-recordings__row {
+        flex-wrap: wrap;
+    }
+
+    .khylo-livetv-recordings__when {
+        flex-basis: 100%;
+    }
+}

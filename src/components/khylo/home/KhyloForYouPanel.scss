@@ -1,0 +1,94 @@
+.khylo-foryou-panel {
+    position: relative;
+    margin: 0 40px 32px;
+    border-radius: 16px;
+    overflow: hidden;
+    background-color: #121314;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+    box-sizing: border-box;
+
+    &__bg {
+        position: absolute;
+        inset: -20px;
+        background-size: cover;
+        background-position: center 25%;
+        filter: blur(50px) saturate(1.2);
+        opacity: 0.12; // Spec 8 & 41: subtle ambient background artwork
+        pointer-events: none;
+    }
+
+    &__overlay {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+            90deg,
+            rgba(18, 19, 20, 0.95) 0%,
+            rgba(18, 19, 20, 0.8) 40%,
+            rgba(18, 19, 20, 0.85) 100%
+        );
+        pointer-events: none;
+    }
+
+    &__content {
+        position: relative;
+        z-index: 2;
+        padding: 32px 36px;
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+    }
+
+    &__header {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    &__badge {
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        color: #D97732;
+        text-transform: uppercase;
+    }
+
+    &__title {
+        font-size: 1.55rem;
+        font-weight: 700;
+        color: #F4F1EC;
+        letter-spacing: -0.015em;
+        margin: 0;
+    }
+
+    &__reason {
+        font-size: 0.92rem;
+        color: #B4AEA7;
+        margin: 0;
+    }
+
+    &__items {
+        display: flex;
+        gap: 18px;
+        overflow-x: auto;
+        padding-bottom: 4px;
+        scrollbar-width: none;
+
+        &::-webkit-scrollbar {
+            display: none;
+        }
+    }
+
+    &__item-wrapper {
+        width: 175px;
+        flex-shrink: 0;
+
+        @media (min-width: 1440px) {
+            width: 190px;
+        }
+
+        @media (min-width: 1920px) {
+            width: 205px;
+        }
+    }
+}

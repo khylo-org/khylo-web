@@ -1,0 +1,78 @@
+.khylo-handoff {
+    position: relative;
+
+    &__panel {
+        position: absolute;
+        top: calc(100% + 12px);
+        right: 0;
+        width: 340px;
+        max-height: 460px;
+        overflow-y: auto;
+        padding: 8px;
+        box-sizing: border-box;
+        background: rgba(18, 19, 20, 0.88);
+        backdrop-filter: blur(28px) saturate(120%);
+        -webkit-backdrop-filter: blur(28px) saturate(120%);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 14px;
+        box-shadow: 0 16px 48px rgba(0, 0, 0, 0.55);
+        z-index: 1100;
+    }
+
+    &__title {
+        padding: 10px 12px 6px;
+        font-size: 1rem;
+        font-weight: 600;
+    }
+
+    &__section {
+        padding: 10px 12px 4px;
+        font-size: 0.75rem;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        opacity: 0.6;
+    }
+
+    &__empty,
+    &__message {
+        padding: 10px 12px 14px;
+        font-size: 0.9rem;
+        line-height: 1.4;
+        opacity: 0.8;
+    }
+
+    &__row {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 2px;
+        width: 100%;
+        padding: 10px 12px;
+        border: 0;
+        border-radius: 10px;
+        background: transparent;
+        color: inherit;
+        text-align: left;
+        cursor: pointer;
+        transition: background 140ms ease;
+
+        &:hover,
+        &:focus-visible {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        &:disabled {
+            opacity: 0.5;
+            cursor: default;
+        }
+    }
+
+    &__name {
+        font-weight: 600;
+    }
+
+    &__detail {
+        font-size: 0.8rem;
+        opacity: 0.65;
+    }
+}

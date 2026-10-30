@@ -1,0 +1,669 @@
+@use "./palette" as palette;
+
+// Theme options
+$dark: true !default;
+// Enable rounded person cards (e.g. for actors/directors)
+$rounded-person-cards: false !default;
+
+// Color palette
+$common-white: palette.$common-white !default;
+$background-default: palette.$background-default !default;
+// NOTE: This is not part of the MUI theme but is used for the page background image in some themes
+$background-defaultImage: none !default;
+$background-paper: palette.$background-paper !default;
+$primary-main: palette.$primary-main !default;
+$primary-dark: palette.$primary-dark !default;
+$primary-light: palette.$primary-light !default;
+$primary-hover: palette.$primary-hover !default;
+$primary-contrastText: palette.$primary-contrastText !default;
+$error-main: palette.$error-main !default;
+$error-dark: palette.$error-dark !default;
+$error-light: palette.$error-light !default;
+$error-contrastText: palette.$error-contrastText !default;
+$text-primary: palette.$text-primary !default;
+$text-secondary: palette.$text-secondary !default;
+$action-focus: palette.$action-focus !default;
+$action-hover: palette.$action-hover !default;
+$divider: palette.$divider !default;
+
+// Components
+$appBar-defaultBg: #0E0F10 !default;
+// NOTE: This color is not part of the MUI theme
+$appBar-transparentBg: rgba(9, 10, 11, 0.82) !default;
+$filledInput-bg: rgba(255, 255, 255, 0.05) !default;
+// NOTE: Defaults to $filledInput-bg so dark themes keep their seamless look
+$filledInput-borderColor: rgba(255, 255, 255, 0.08) !default;
+// NOTE: Card border radius — matches the default in card.scss; exposed as --jf-card-borderRadius for custom user themes
+$card-borderRadius: 12px !default;
+$alert-infoFilledBg: #2A3644 !default;
+$alert-infoFilledColor: #F4F1EC !default;
+$button-inheritContainedBg: rgba(255, 255, 255, 0.08) !default;
+$button-inheritContainedHoverBg: rgba(255, 255, 255, 0.14) !default;
+$snackbarContent-bg: #151516 !default;
+$snackbarContent-color: #F4F1EC !default;
+// Secondary/accent color used for focus and interactive states.
+// Defaults to $primary-main so all existing themes are unaffected.
+$secondary-main: $primary-main !default;
+$secondary-contrastText: $primary-contrastText !default;
+// Background for legacy surface elements
+$surface-overlay: #151516 !default;
+// Optional CSS gradient applied over $appBar-defaultBg on the header and detail ribbon.
+$appBar-gradient: none !default;
+
+// Assign custom css variables not part of the MUI theme palette
+:root {
+    --khylo-brand: #D97732;
+    --khylo-brand-hover: #B85F22;
+    --khylo-brand-active: #964817;
+    --khylo-brand-subtle: rgba(217, 119, 50, 0.14);
+    --khylo-background: #090A0B;
+    --khylo-background-secondary: #0E0F10;
+    --khylo-surface-1: #090A0B;
+    --khylo-surface-2: #121314;
+    --khylo-surface: #121314;
+    --khylo-surface-elevated: #151516;
+    --khylo-surface-glass: rgba(18, 19, 20, 0.55);
+    --khylo-glass-fill: rgba(18, 19, 20, 0.55);
+    --khylo-glass-blur: blur(24px) saturate(120%);
+    --khylo-glass-border: 1px solid rgba(255, 255, 255, 0.07);
+    --khylo-glass-shadow: 0 12px 40px rgba(0, 0, 0, 0.28);
+    --khylo-surface-muted: #0E0F10;
+    --khylo-text-primary: #F4F1EC;
+    --khylo-text-secondary: #B4AEA7;
+    --khylo-text-muted: #858079;
+    --khylo-border: rgba(255, 255, 255, 0.07);
+    --khylo-border-subtle: rgba(255, 255, 255, 0.06);
+    --khylo-border-hover: rgba(255, 255, 255, 0.10);
+    --khylo-border-strong: rgba(255, 255, 255, 0.14);
+    --khylo-focus: #D97732;
+    --khylo-focus-ring: rgba(217, 119, 50, 0.25);
+    --khylo-success: #3F7D58;
+    --khylo-warning: #B7791F;
+    --khylo-error: #E5484D;
+    --khylo-info: #4F6F8F;
+    --khylo-radius-sm: 8px;
+    --khylo-radius-md: 12px;
+    --khylo-radius-lg: 16px;
+    --khylo-radius-hero: 20px;
+    --khylo-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.35);
+    --khylo-shadow-md: 0 8px 24px rgba(0, 0, 0, 0.45);
+    --khylo-shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.65);
+    --khylo-shadow-floating: 0 24px 64px rgba(0, 0, 0, 0.8);
+
+    --jf-palette-background-defaultImage: #{$background-defaultImage};
+    --jf-palette-AppBar-transparentBg: #{$appBar-transparentBg};
+    --jf-palette-AppBar-gradient: #{$appBar-gradient};
+    --jf-card-borderRadius: #{$card-borderRadius};
+}
+
+* {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.16) transparent;
+}
+
+.skinHeader,
+html {
+    color: var(--jf-palette-text-secondary, $text-secondary);
+}
+
+.wizardStartForm,
+.ui-corner-all,
+.ui-shadow {
+    background-color: var(--jf-palette-background-default, $background-default);
+    background-image: var(--jf-palette-background-defaultImage, $background-defaultImage);
+    background-position: top center;
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+.khylo-collapsible-button {
+    border-color: var(--jf-palette-divider, $divider);
+}
+
+.skinHeader-withBackground,
+.detailRibbon {
+    background-color: var(--jf-palette-AppBar-defaultBg, $appBar-defaultBg);
+    background-image: var(--jf-palette-AppBar-gradient, $appBar-gradient);
+}
+
+.detailRibbon {
+    .layout-tv & {
+        background: none;
+    }
+}
+
+.skinHeader.semiTransparent {
+    background-color: var(--jf-palette-AppBar-transparentBg, $appBar-transparentBg);
+    background-image: none;
+    backdrop-filter: none !important;
+
+    .layout-tv & {
+        background: none;
+    }
+}
+
+.pageTitleWithDefaultLogo {
+    background-image: url(../../assets/img/khylo-logo.png) !important;
+    background-size: contain !important;
+    background-position: left center !important;
+    background-repeat: no-repeat !important;
+    height: 2.2rem !important;
+    min-width: 120px !important;
+
+    .layout-tv & {
+        background-image: url(../../assets/img/khylo-icon.png) !important;
+    }
+}
+
+.backgroundContainer,
+.nowPlayingPlaylist,
+html {
+    background-color: var(--jf-palette-background-default, $background-default);
+    background-image: var(--jf-palette-background-defaultImage, $background-defaultImage);
+    background-position: top center;
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+.backgroundContainer.withBackdrop {
+    opacity: 0.86;
+}
+
+.dialog {
+    background-color: var(--jf-palette-background-default, $background-default);
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .paper-icon-button-light:hover:not(:disabled) {
+        color: var(--jf-palette-primary-main, $primary-main);
+        background-color: $primary-hover;
+        background-color: rgba(var(--jf-palette-primary-mainChannel) / var(--jf-palette-action-selectedOpacity));
+    }
+}
+
+.paper-icon-button-light:active:not(:disabled) {
+    color: var(--jf-palette-primary-main, $primary-main);
+    background-color: $primary-hover;
+    background-color: rgba(var(--jf-palette-primary-mainChannel) / var(--jf-palette-action-selectedOpacity));
+}
+
+.paper-icon-button-light.show-focus:focus {
+    color: var(--jf-palette-secondary-main, $secondary-main);
+}
+
+.khylo-scrollbuttons {
+    color: var(--jf-palette-text-secondary, $text-secondary);
+}
+
+a[data-role="button"],
+.fab,
+.raised {
+    background: var(--jf-palette-Button-inheritContainedBg, $button-inheritContainedBg);
+    color: var(--jf-palette-text-secondary, $text-secondary);
+
+    &:hover {
+        background: var(--jf-palette-Button-inheritContainedHoverBg, $button-inheritContainedHoverBg);
+    }
+
+    &:focus {
+        background: var(--jf-palette-secondary-main, $secondary-main);
+    }
+}
+
+.button-submit {
+    background: var(--jf-palette-primary-main, $primary-main);
+    color: var(--jf-palette-primary-contrastText, $primary-contrastText);
+
+    &:hover {
+        background: var(--jf-palette-primary-dark, $primary-dark);
+    }
+
+    &:focus {
+        background: var(--jf-palette-secondary-main, $secondary-main);
+        color: var(--jf-palette-secondary-contrastText, $secondary-contrastText);
+    }
+}
+
+.button-delete {
+    background: var(--jf-palette-error-main, $error-main);
+    color: var(--jf-palette-error-contrastText, $error-contrastText);
+}
+
+.checkboxLabel {
+    color: inherit;
+}
+
+.checkboxListLabel,
+.inputLabel,
+.inputLabelUnfocused,
+.paperListLabel,
+.textareaLabelUnfocused {
+    color: var(--jf-palette-text-secondary, $text-secondary);
+}
+
+.inputLabelFocused,
+.selectLabelFocused,
+.textareaLabelFocused {
+    color: var(--jf-palette-secondary-main, $secondary-main);
+}
+
+.checkboxOutline {
+    border-color: currentColor;
+}
+
+.collapseContent,
+.formDialogFooter:not(.formDialogFooter-clear),
+.formDialogHeader:not(.formDialogHeader-clear) {
+    background-color: $surface-overlay;
+}
+
+.paperList,
+.visualCardBox {
+    background-color: $surface-overlay;
+    border-radius: var(--jf-card-borderRadius, $card-borderRadius);
+}
+
+.cardBox:not(.visualCardBox) .cardPadder,
+.cardContent,
+.cardImageContainer,
+.blurhash-canvas,
+.itemDetailImage,
+.cardOverlayContainer {
+    border-radius: var(--jf-card-borderRadius, $card-borderRadius);
+}
+
+.cardBox:not(.visualCardBox) .cardPadder {
+    background-color: $surface-overlay;
+}
+
+.cardPadder .cardImageIcon {
+    color: $surface-overlay;
+}
+
+.layout-tv .formDialogFooter:not(.formDialogFooter-clear) {
+    background-color: transparent;
+}
+
+.cardText-secondary,
+.fieldDescription,
+.guide-programNameCaret,
+.listItem .secondary,
+.nowPlayingBarSecondaryText,
+.programSecondaryTitle,
+.secondaryText {
+    color: var(--jf-palette-text-secondary, $text-secondary);
+}
+
+.actionsheetDivider {
+    background: var(--jf-palette-divider, $divider);
+}
+
+.cardFooter-vibrant .cardText-secondary {
+    color: inherit;
+    opacity: 0.5;
+}
+
+@if $rounded-person-cards {
+    .personCard {
+        .cardScalable {
+            border-radius: 50% !important;
+            border: 1px solid transparent;
+        }
+
+        .overflowPortraitCard {
+            width: 40vw;
+        }
+
+        .coveredImage {
+            background-position-y: 20%;
+            border-radius: 50%;
+        }
+
+        .cardOverlayContainer {
+            clip-path: circle(50% at 50% 50%);
+        }
+
+        .cardOverlayButton-br {
+            right: 20%;
+        }
+
+        .cardPadder-overflowPortrait,
+        .cardPadder-portrait {
+            padding-bottom: 100%;
+            contain: strict;
+            border-radius: 50% !important;
+        }
+    }
+}
+
+.toast {
+    background: var(--jf-palette-SnackbarContent-bg, $snackbarContent-bg);
+    color: var(--jf-palette-SnackbarContent-color, $snackbarContent-color);
+}
+
+.appfooter,
+.playlistSectionButton {
+    background: var(--jf-palette-background-paper, $background-paper);
+    color: var(--jf-palette-text-secondary, $text-secondary);
+}
+
+.itemSelectionPanel {
+    border-color: var(--jf-palette-primary-main, $primary-main);
+    border-width: 1px;
+    border-style: solid;
+}
+
+.selectionCommandsPanel {
+    background: var(--jf-palette-primary-main, $primary-main);
+    color: var(--jf-palette-primary-contrastText, $primary-contrastText) !important;
+
+    .paper-icon-button-light:not(:disabled) {
+        color: var(--jf-palette-primary-contrastText, $primary-contrastText);
+
+        &:hover,
+        &:focus {
+            background-color: var(--jf-palette-primary-dark, $primary-dark);
+        }
+    }
+}
+
+.upNextDialog-countdownText {
+    color: var(--jf-palette-primary-main, $primary-main);
+}
+
+.alphaPickerButton {
+    color: var(--jf-palette-text-secondary, $text-secondary);
+    background-color: transparent;
+
+    &-selected {
+        color: var(--jf-palette-text-primary, $text-primary);
+    }
+
+    &-tv:focus {
+        background-color: var(--jf-palette-secondary-main, $secondary-main);
+        color: var(--jf-palette-secondary-contrastText, $secondary-contrastText);
+    }
+}
+
+.noBackdropTransparency .detailPageWrapperContainer {
+    background-color: var(--jf-palette-background-default, $background-default);
+    background-image: var(--jf-palette-background-defaultImage, $background-defaultImage);
+    background-attachment: fixed;
+    background-position: top center;
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+.listItem-border {
+    border-color: var(--jf-palette-divider, $divider);
+}
+
+.listItem:focus {
+    background-color: var(--jf-palette-action-focus, $action-focus);
+}
+
+.listItem:hover {
+    background-color: var(--jf-palette-action-hover, $action-hover);
+}
+
+.progressring-spiner {
+    border-color: var(--jf-palette-primary-main, $primary-main);
+}
+
+.button-flat:hover {
+    color: var(--jf-palette-primary-main, $primary-main);
+}
+
+.button-link {
+    color: var(--jf-palette-primary-main, $primary-main);
+}
+
+.mediaInfoText {
+    border-color: inherit;
+    border-style: solid;
+    border-width: 1px;
+}
+
+.khylo-input,
+.khylo-textarea {
+    background: var(--jf-palette-FilledInput-bg, $filledInput-bg);
+    border-color: var(--jf-palette-FilledInput-borderColor, $filledInput-borderColor);
+    color: inherit;
+    border-width: 0.16em;
+    border-style: solid;
+    border-radius: 0.2em;
+
+    &:focus {
+        border-color: var(--jf-palette-secondary-main, $secondary-main);
+    }
+}
+
+.khylo-select-withcolor {
+    // NOTE: This should use `FilledInput-bg` to match other form elements,
+    // but that will break the native dropdown styling
+    background: var(--jf-palette-background-paper, $background-paper);
+    border-color: var(--jf-palette-FilledInput-borderColor, $filledInput-borderColor);
+    color: inherit;
+    border-width: 0.16em;
+    border-style: solid;
+    border-radius: 0.2em;
+}
+
+.khylo-select-withcolor > option {
+    background: var(--jf-palette-background-paper, $background-paper);
+    color: inherit;
+}
+
+.khylo-select-withcolor:focus {
+    border-color: var(--jf-palette-secondary-main, $secondary-main) !important;
+}
+
+.khylo-select-tv-withcolor:focus {
+    background-color: var(--jf-palette-secondary-main, $secondary-main) !important;
+    color: var(--jf-palette-secondary-contrastText, $secondary-contrastText) !important;
+}
+
+.khylo-checkbox:checked + span + .checkboxOutline {
+    border-color: var(--jf-palette-primary-main, $primary-main);
+}
+
+.khylo-checkbox:focus + span + .checkboxOutline {
+    border-color: var(--jf-palette-common-white, $common-white);
+}
+
+.khylo-checkbox:checked + span + .checkboxOutline,
+.itemProgressBarForeground {
+    background-color: var(--jf-palette-primary-main, $primary-main);
+}
+
+.khylo-checkbox:focus:not(:checked) + span + .checkboxOutline {
+    border-color: var(--jf-palette-secondary-main, $secondary-main);
+}
+
+.itemProgressBarForeground-recording {
+    background-color: var(--jf-palette-error-light, $error-light);
+}
+
+.countIndicator,
+.fullSyncIndicator,
+.mediaSourceIndicator,
+.playedIndicator {
+    background: var(--jf-palette-primary-main, $primary-main);
+    color: var(--jf-palette-primary-contrastText, $primary-contrastText);
+
+    // Safari is failing to render the SVG fill color with "currentColor" here
+    & > svg {
+        fill: var(--jf-palette-primary-contrastText, $primary-contrastText);
+    }
+}
+
+.mainDrawer,
+.drawer-open {
+    background-color: var(--jf-palette-background-default, $background-default);
+}
+
+.navMenuOption:hover {
+    background: var(--jf-palette-action-hover, $action-hover);
+}
+
+.navMenuOption-selected {
+    background: var(--jf-palette-primary-main, $primary-main) !important;
+    color: var(--jf-palette-primary-contrastText, $primary-contrastText);
+}
+
+.khylo-button.show-focus:focus {
+    background: var(--jf-palette-primary-main, $primary-main);
+    color: var(--jf-palette-primary-contrastText, $primary-contrastText);
+}
+
+.khylo-tab-button {
+    color: var(--jf-palette-text-secondary, $text-secondary);
+}
+
+.khylo-tab-button-active {
+    color: var(--jf-palette-text-primary, $text-primary);
+}
+
+.khylo-tab-button.show-focus:focus,
+.khylo-tab-button:hover {
+    color: var(--jf-palette-secondary-main, $secondary-main);
+}
+
+.channelPrograms,
+.guide-channelHeaderCell,
+.programCell {
+    border-color: rgba(255, 255, 255, 0.05);
+}
+
+.programCell-sports {
+    background: #3949ab !important;
+}
+
+.programCell-movie {
+    background: #5e35b1 !important;
+}
+
+.programCell-kids {
+    background: #039be5 !important;
+}
+
+.programCell-news {
+    background: #43a047 !important;
+}
+
+.programCell-active {
+    background: #1e1e1e !important;
+}
+
+.guide-channelHeaderCell:focus,
+.programCell:focus {
+    background-color: var(--jf-palette-primary-main, $primary-main) !important;
+    color: var(--jf-palette-primary-contrastText, $primary-contrastText) !important;
+}
+
+.guide-programTextIcon {
+    color: #1e1e1e;
+    background: #555;
+}
+
+.guide-headerTimeslots {
+    color: inherit;
+}
+
+.guide-date-tab-button.khylo-tab-button-active,
+.guide-date-tab-button:focus {
+    color: var(--jf-palette-secondary-main, $secondary-main);
+}
+
+.guide-date-tab-button.show-focus:focus {
+    background-color: var(--jf-palette-primary-main, $primary-main);
+    color: var(--jf-palette-primary-contrastText, $primary-contrastText);
+}
+
+.infoBanner {
+    background: var(--jf-palette-Alert-infoFilledBg, $alert-infoFilledBg);
+    color: var(--jf-palette-Alert-infoFilledColor, $alert-infoFilledColor);
+    padding: 1em;
+    border-radius: 0.25em;
+}
+
+.ratingbutton-icon-withrating,
+.playstatebutton-icon-played {
+    color: var(--jf-palette-error-light, $error-light);
+}
+
+.buttonActive {
+    color: var(--jf-palette-primary-main, $primary-main) !important;
+}
+
+.card:focus .cardBox.visualCardBox,
+.card:focus .cardBox:not(.visualCardBox) .cardScalable {
+    border-color: var(--jf-palette-secondary-main, $secondary-main) !important;
+    border-radius: var(--jf-card-borderRadius, $card-borderRadius);
+}
+
+// The show-focus border is 0.5em wide (see card.scss), so the outer ring's
+// border-radius must add that offset to stay flush with the card's corners.
+.card.show-focus:not(.show-animation) .cardBox.visualCardBox,
+.card.show-focus:not(.show-animation) .cardBox:not(.visualCardBox) .cardScalable {
+    border-radius: calc(var(--jf-card-borderRadius, $card-borderRadius) + 0.5em);
+}
+
+::-webkit-scrollbar-track {
+    box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+}
+
+::-webkit-scrollbar-track-piece {
+    background-color: #3b3b3b;
+}
+
+.layout-desktop ::-webkit-scrollbar,
+.layout-tv ::-webkit-scrollbar {
+    width: 0.4em;
+    height: 0.4em;
+}
+
+::-webkit-scrollbar-thumb:horizontal,
+::-webkit-scrollbar-thumb:vertical {
+    border-radius: 2px;
+    background: center no-repeat #888;
+}
+
+.timeslotHeaders-desktop::-webkit-scrollbar {
+    height: 0.7em;
+}
+
+.metadataSidebarIcon {
+    color: var(--jf-palette-primary-main, $primary-main);
+}
+
+#comicsPlayer,
+#bookPlayer,
+#pdfPlayer {
+    background-color: var(--jf-palette-background-default, $background-default);
+}
+
+#comicsPlayer .swiper-pagination {
+    background-color: var(--jf-palette-background-default, $background-default);
+    color: var(--jf-palette-text-primary, $text-primary);
+}
+
+#dialogToc {
+    background-color: var(--jf-palette-background-default, $background-default);
+}
+
+#dialogToc .toc li a,
+#dialogToc .bookplayerButtonIcon {
+    color: var(--jf-palette-text-secondary, $text-secondary);
+
+    &:active,
+    &:hover {
+        color: var(--jf-palette-primary-main, $primary-main);
+    }
+}
+
+/* khylo-radio style override */
+.mdl-radio.show-focus .mdl-radio__button:focus + .mdl-radio__circles svg .mdl-radio__outer-circle,
+.mdl-radio.show-focus .mdl-radio__button:focus + .mdl-radio__circles svg .mdl-radio__inner-circle {
+    color: var(--jf-palette-secondary-main, $secondary-main);
+}

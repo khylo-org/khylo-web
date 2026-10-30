@@ -1,0 +1,264 @@
+.khylo-home {
+    width: 100%;
+    min-height: 100%;
+    background-color: #090A0B;
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 64px;
+    box-sizing: border-box;
+
+    // Spec 88: Maximum content width on ultrawide monitors
+    max-width: 2560px;
+    margin: 0 auto;
+}
+
+/* Sub-views: Watchlist & Watch History (Spec 103, 106, 107) */
+.khylo-subview {
+    width: 100%;
+    min-height: 100%;
+    background-color: #090A0B;
+    color: #F4F1EC;
+    // Home runs under the floating top bar, so its other tabs start below it
+    padding: 100px 48px 64px;
+    box-sizing: border-box;
+
+    &__header {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-bottom: 32px;
+    }
+
+    &__title-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+    &__heading-group {
+        display: flex;
+        align-items: baseline;
+        gap: 16px;
+    }
+
+    &__title {
+        font-size: clamp(2rem, 3vw, 2.75rem);
+        font-weight: 800;
+        letter-spacing: -0.025em;
+        color: #F4F1EC;
+        margin: 0;
+        line-height: 1.1;
+    }
+
+    &__count-pill {
+        display: inline-flex;
+        align-items: center;
+        padding: 4px 10px;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        color: #858079;
+        font-size: 0.8rem;
+        font-weight: 500;
+        letter-spacing: 0.02em;
+    }
+
+    &__subtitle {
+        font-size: 0.95rem;
+        color: #858079;
+        margin: 0;
+        line-height: 1.4;
+    }
+
+    &__filters {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 14px;
+    }
+
+    &__filter-btn {
+        display: inline-flex;
+        align-items: center;
+        padding: 7px 16px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 160ms ease;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        color: #858079;
+        font-family: inherit;
+
+        &:hover {
+            color: #F4F1EC;
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        &--active {
+            background: rgba(217, 119, 50, 0.16);
+            border-color: rgba(217, 119, 50, 0.45);
+            color: #F4F1EC;
+            font-weight: 600;
+            box-shadow: 0 0 12px rgba(217, 119, 50, 0.2);
+
+            &:hover {
+                background: rgba(217, 119, 50, 0.22);
+                border-color: #D97732;
+            }
+        }
+
+        &:focus-visible {
+            outline: 2px solid #D97732;
+            outline-offset: 2px;
+        }
+    }
+
+    &__content {
+        position: relative;
+        width: 100%;
+    }
+
+    &__grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 32px 20px;
+        width: 100%;
+    }
+
+    // Landscape cards (Continue > Watching)
+    &__grid--wide {
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    }
+
+    // Book covers (Continue > Listening / Reading)
+    &__grid--books {
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    }
+
+    &__card-wrap {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+
+        .khylo-card {
+            width: 100%;
+        }
+    }
+
+    // Chronological History
+    &__history-groups {
+        display: flex;
+        flex-direction: column;
+        gap: 36px;
+    }
+
+    &__history-group {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    &__group-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #F4F1EC;
+        margin: 0;
+        padding-bottom: 8px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        letter-spacing: -0.01em;
+    }
+
+    // Empty State
+    &__empty {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 96px 24px;
+        gap: 16px;
+    }
+
+    &__empty-icon {
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        svg {
+            font-size: 2rem;
+            color: #858079;
+        }
+    }
+
+    &__empty-title {
+        font-size: 1.45rem;
+        font-weight: 700;
+        color: #F4F1EC;
+        margin: 0;
+    }
+
+    &__empty-desc {
+        font-size: 0.95rem;
+        line-height: 1.5;
+        color: #858079;
+        margin: 0;
+        max-width: 440px;
+    }
+}
+
+@media (max-width: 1024px) {
+    .khylo-subview {
+        padding: 24px 28px 48px;
+
+        &__grid {
+            grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+            gap: 24px 16px;
+        }
+    }
+}
+
+@media (max-width: 768px) {
+    .khylo-subview {
+        padding: 20px 16px 40px;
+
+        &__title-row {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        &__grid {
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 20px 12px;
+        }
+    }
+}
+
+// "See all" link in home rail headers
+.khylo-home__see-all {
+    background: none;
+    border: none;
+    padding: 4px 0;
+    color: #D97732;
+    font-family: inherit;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+
+    &:hover {
+        color: #F4F1EC;
+    }
+
+    &:focus-visible {
+        outline: 2px solid #D97732;
+        outline-offset: 2px;
+    }
+}

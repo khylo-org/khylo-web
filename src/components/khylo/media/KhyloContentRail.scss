@@ -1,0 +1,257 @@
+.khylo-rail {
+    position: relative;
+    margin-bottom: 28px;
+    display: flex;
+    flex-direction: column;
+
+    &__header {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        padding: 0 40px 10px;
+    }
+
+    &__title-group {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+    }
+
+    &__title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        letter-spacing: -0.015em;
+        color: #F4F1EC;
+        margin: 0;
+    }
+
+    &__subtitle {
+        font-size: 0.8125rem;
+        color: #858079;
+        margin: 0;
+    }
+
+    &__action {
+        font-size: 0.85rem;
+    }
+
+    &__viewport {
+        position: relative;
+        width: 100%;
+    }
+
+    &__track {
+        display: flex;
+        gap: 16px;
+        overflow-x: auto;
+        overflow-y: hidden;
+        padding: 4px 40px 16px;
+        scroll-behavior: smooth;
+        scrollbar-width: none;
+        -webkit-overflow-scrolling: touch;
+
+        &::-webkit-scrollbar {
+            display: none;
+        }
+    }
+
+    &__item-wrapper {
+        flex-shrink: 0;
+    }
+
+    // Step 5: Compact, Premium Card Sizing (Specs 48-67)
+    &--continue {
+        .khylo-rail__item-wrapper {
+            width: 270px;
+
+            @media (min-width: 1440px) {
+                width: 290px;
+            }
+
+            @media (min-width: 1920px) {
+                width: 310px;
+            }
+        }
+    }
+
+    &--poster {
+        .khylo-rail__item-wrapper {
+            width: 165px;
+
+            @media (min-width: 1440px) {
+                width: 180px;
+            }
+
+            @media (min-width: 1920px) {
+                width: 195px;
+            }
+        }
+    }
+
+    &--square {
+        .khylo-rail__item-wrapper {
+            width: 180px;
+
+            @media (min-width: 1440px) {
+                width: 195px;
+            }
+        }
+    }
+
+    &--collection {
+        .khylo-rail__item-wrapper {
+            width: 320px;
+
+            @media (min-width: 1440px) {
+                width: 360px;
+            }
+        }
+    }
+
+    &--book,
+    &--boxart {
+        .khylo-rail__item-wrapper {
+            width: 190px;
+
+            @media (min-width: 1366px) {
+                width: calc((100vw - 80px - 80px - (5 * 18px)) / 6);
+                min-width: 175px;
+                max-width: 240px;
+            }
+        }
+    }
+
+    // Secondary home rail (Continue Reading & Listening): smaller covers so they stay
+    // visually below Continue Watching, which is the main purpose of the home screen.
+    &--compact.khylo-rail--book {
+        .khylo-rail__item-wrapper {
+            width: 140px;
+            min-width: 0;
+            max-width: none;
+
+            @media (min-width: 1440px) {
+                width: 150px;
+            }
+
+            @media (min-width: 1920px) {
+                width: 160px;
+            }
+        }
+
+        // Smaller hover buttons so play / details / remove fit across a narrow cover
+        .khylo-card__actions {
+            gap: 8px;
+        }
+
+        .khylo-card__action-btn {
+            width: 36px;
+            height: 36px;
+
+            svg {
+                font-size: 1.15rem;
+            }
+        }
+
+        .khylo-rail__track {
+            gap: 12px;
+        }
+
+        .khylo-rail__title {
+            font-size: 1.05rem;
+        }
+    }
+
+    // Rail Navigation Arrows (Spec 97)
+    &__arrow {
+        position: absolute;
+        top: calc(50% - 14px);
+        transform: translateY(-50%);
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background-color: rgba(21, 21, 22, 0.85);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        color: #F4F1EC;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        z-index: 10;
+        opacity: 0;
+        pointer-events: none;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+        transition: opacity 180ms ease, background-color 150ms ease, transform 150ms ease;
+
+        svg {
+            font-size: 1.6rem;
+        }
+
+        &:hover {
+            background-color: rgba(255, 255, 255, 0.16);
+            transform: translateY(-50%) scale(1.08);
+        }
+
+        &--visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        &--left {
+            left: 14px;
+        }
+
+        &--right {
+            right: 14px;
+        }
+    }
+
+    &__empty {
+        padding: 24px 0;
+        color: #858079;
+        font-size: 0.95rem;
+    }
+}
+
+/* 2026 refresh: just the row's name, set like the TV app; "See all" stays quietly to the right */
+.khylo-rail {
+    &__header {
+        padding: 0 56px 6px;
+    }
+
+    &__title {
+        font-size: 1.3rem;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+    }
+
+    &__subtitle {
+        display: none;
+    }
+
+    // Lined up with the hero's text, with room for cards to lift on hover
+    &__track {
+        padding: 12px 56px 22px;
+        gap: 18px;
+    }
+
+    &__action {
+        opacity: 0.75;
+        transition: opacity 160ms ease;
+
+        &:hover {
+            opacity: 1;
+        }
+    }
+}
+
+@media (max-width: 900px) {
+    .khylo-rail__header {
+        padding: 0 20px 6px;
+    }
+
+    .khylo-rail__track {
+        padding: 10px 20px 18px;
+    }
+}

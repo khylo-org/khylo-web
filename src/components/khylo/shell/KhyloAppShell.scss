@@ -1,0 +1,118 @@
+.khylo-shell {
+    display: flex;
+    min-height: 100vh;
+    width: 100%;
+    background-color: #090A0B;
+    color: #F4F1EC;
+    position: relative;
+    box-sizing: border-box;
+
+    &__main {
+        margin-left: 76px;
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+        background-color: #090A0B;
+        transition: margin-left 220ms ease;
+    }
+
+    // The top bar floats over the page; ordinary pages start below it, full-bleed pages
+    // (Home, title pages) run their artwork underneath it
+    &__content {
+        padding-top: 68px;
+
+        &--bleed,
+        &--fullscreen {
+            padding-top: 0;
+        }
+    }
+
+    &--pinned {
+        .khylo-shell__main {
+            margin-left: 215px;
+        }
+    }
+
+    &--fullscreen {
+        .khylo-shell__main {
+            margin-left: 0 !important;
+        }
+    }
+
+    &--video,
+    &--fullscreen {
+        background: transparent !important;
+        background-color: transparent !important;
+
+        .khylo-shell__main {
+            background: transparent !important;
+            background-color: transparent !important;
+        }
+
+        .khylo-shell__content {
+            background: transparent !important;
+            background-color: transparent !important;
+        }
+
+        .mainAnimatedPages,
+        .mainAnimatedPage,
+        #videoOsdPage {
+            background: transparent !important;
+            background-color: transparent !important;
+        }
+    }
+}
+
+html.transparentDocument,
+body.transparentDocument,
+.transparentDocument {
+    background: transparent !important;
+    background-color: transparent !important;
+
+    .khylo-shell,
+    .khylo-shell__main,
+    .khylo-shell__content,
+    .khylo-fullscreen-container,
+    .mainAnimatedPages,
+    .mainAnimatedPage,
+    #videoOsdPage,
+    #reactRoot {
+        background: transparent !important;
+        background-color: transparent !important;
+    }
+}
+
+.khylo-fullscreen-container {
+    width: 100%;
+    min-height: 100vh;
+    background: transparent !important;
+    background-color: transparent !important;
+    position: relative;
+}
+
+@media (max-width: 768px) {
+    // The sidebar is hidden on phones, so no room is kept for it (even when it's pinned)
+    .khylo-shell .khylo-shell__main,
+    .khylo-shell--pinned .khylo-shell__main {
+        margin-left: 0;
+        padding-bottom: 60px;
+    }
+
+    .khylo-nav-rail {
+        display: none;
+    }
+}
+
+// Music view: its own sidebar replaces the app rail, so the content starts where the rail was
+@media (min-width: 900px) {
+    .khylo-shell--music .khylo-nav-rail {
+        display: none;
+    }
+
+    .khylo-shell--music .khylo-shell__main,
+    .khylo-shell--music.khylo-shell--pinned .khylo-shell__main {
+        margin-left: 304px;
+    }
+}

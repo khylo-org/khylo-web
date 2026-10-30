@@ -1,0 +1,113 @@
+#bookPlayer {
+    position: relative;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    z-index: 99999;
+    background: #f4ecdc;
+    transition: background-color 300ms ease;
+
+    .bookplayerErrorMsg {
+        text-align: center;
+        color: #e5a00d;
+        padding: 20px;
+    }
+}
+
+#bookPlayerContainer {
+    position: absolute;
+    // Must stay below the reader controls (z-index 1002) or the book swallows every click on them.
+    z-index: 1;
+    left: 6%;
+    right: 6%;
+    // Leave room above and below the text so the bars never sit on top of it
+    top: calc(64px + env(safe-area-inset-top));
+    bottom: calc(60px + env(safe-area-inset-bottom));
+    transition: left 250ms ease, right 250ms ease;
+}
+
+#dialogToc {
+    --toc-bg: #f4ecdc;
+    --toc-fg: #3b3025;
+
+    background: var(--toc-bg);
+    color: var(--toc-fg);
+    width: min(440px, 92vw);
+    max-height: 80vh;
+    border-radius: 18px;
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.35);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+
+    .tocHeader {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 20px 20px 12px 28px;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    }
+
+    &.dialogToc--dark .tocHeader {
+        border-bottom-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .tocTitle {
+        margin: 0;
+        font-size: 1.15rem;
+        font-weight: 700;
+    }
+
+    .tocClose {
+        width: 34px;
+        height: 34px;
+        border: none;
+        border-radius: 50%;
+        background: rgba(127, 127, 127, 0.15);
+        color: inherit;
+        font-size: 1.3rem;
+        line-height: 1;
+        cursor: pointer;
+    }
+
+    .toc {
+        margin: 0;
+        padding: 8px 0 20px;
+        overflow-y: auto;
+    }
+
+    .toc li {
+        list-style-type: none;
+        font-size: 1rem;
+        font-weight: 600;
+
+        ul {
+            padding-left: 0;
+
+            li {
+                font-weight: 400;
+                font-size: 0.93rem;
+
+                a {
+                    padding-left: 44px;
+                    opacity: 0.8;
+                }
+            }
+        }
+
+        a {
+            display: block;
+            padding: 11px 28px;
+            color: inherit;
+            text-decoration: none;
+            font-family: Georgia, 'Iowan Old Style', serif;
+            transition: background-color 150ms ease;
+        }
+
+        a:hover,
+        a:focus-visible {
+            background: rgba(127, 127, 127, 0.12);
+            color: #d97732;
+        }
+    }
+}

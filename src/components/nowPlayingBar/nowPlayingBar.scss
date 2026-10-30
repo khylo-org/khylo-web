@@ -1,0 +1,274 @@
+// Now playing bar: a flat full-width strip.
+// Left: artwork and title. Centre: transport with the progress bar under it. Right: volume and modes.
+// Markup lives in nowPlayingBar.js.
+
+$bar-height: 90px;
+$bar-bg: #151516;
+$subdued: #B3B3B3;
+
+// The footer only holds this bar, so let the bar define the background
+.appfooter {
+    background: transparent !important;
+}
+
+.nowPlayingBar {
+    /* Above everything, except for the video player and popup overlays */
+    position: relative;
+    height: $bar-height;
+    margin: 0;
+    padding: 0 16px;
+    box-sizing: border-box;
+    border: none;
+    border-radius: 0;
+    background: $bar-bg;
+    color: #FFFFFF;
+    text-align: left;
+    will-change: transform;
+    contain: layout style;
+    transition: transform 200ms ease-out;
+}
+
+.nowPlayingBar-hidden {
+    transform: translate3d(0, 100%, 0);
+}
+
+.nowPlayingBarTop {
+    position: static;
+    display: grid;
+    grid-template-columns: minmax(0, 3fr) minmax(0, 4fr) minmax(0, 3fr);
+    align-items: center;
+    gap: 16px;
+    height: 100%;
+}
+
+.mediaButton,
+.nowPlayingBarUserDataButtons .btnUserItemRating {
+    margin: 0;
+    vertical-align: middle;
+    text-align: center;
+}
+
+.mediaButton {
+    color: $subdued;
+    font-size: 100%;
+    transition: color 120ms ease;
+
+    &:hover {
+        color: #FFFFFF;
+    }
+}
+
+// Progress: a thin line under the transport, spanning the centre column
+.nowPlayingBarPositionContainer {
+    position: absolute !important;
+    left: 33%;
+    right: 33%;
+    bottom: 8px;
+    z-index: 1;
+}
+
+.headroom--unpinned .nowPlayingBarPositionContainer {
+    display: none;
+}
+
+.noMediaProgress .nowPlayingBarPositionContainer {
+    display: none;
+}
+
+// Artwork and title
+.nowPlayingBarInfoContainer {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.nowPlayingBar .nowPlayingImage {
+    width: 56px;
+    height: 56px;
+    flex-shrink: 0;
+    border-radius: 4px;
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+.nowPlayingBarText {
+    min-width: 0;
+    flex-grow: 1;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    font-size: 0.875rem;
+    line-height: 1.35;
+
+    [dir="ltr"] & {
+        margin: 0;
+        text-align: left;
+    }
+
+    [dir="rtl"] & {
+        margin: 0;
+        text-align: right;
+    }
+
+    a {
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: #FFFFFF;
+        font-weight: 500;
+        text-decoration: none;
+    }
+}
+
+.nowPlayingBarSecondaryText a {
+    font-size: 0.75rem;
+    font-weight: 400;
+    color: $subdued;
+}
+
+// Transport: previous, play/pause (white circle), next
+.nowPlayingBarCenter {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    padding-bottom: 14px;
+    text-align: center;
+    vertical-align: middle;
+
+    .mediaButton {
+        width: 32px;
+        height: 32px;
+    }
+
+    .stopButton {
+        display: none !important;
+    }
+
+    .previousTrackButton,
+    .nextTrackButton {
+        color: #FFFFFF;
+        font-size: 120%;
+    }
+
+    .playPauseButton {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: #FFFFFF;
+        color: #000000;
+
+        &:hover {
+            transform: scale(1.06);
+            background: #FFFFFF;
+            color: #000000;
+        }
+
+        .material-icons {
+            color: #000000;
+        }
+    }
+}
+
+// Elapsed time sits at the left end of the progress line
+.nowPlayingBarCurrentTime {
+    position: absolute;
+    left: calc(33% - 44px);
+    bottom: 1px;
+    min-width: 40px;
+    text-align: right;
+    font-size: 0.6875rem;
+    color: $subdued;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+}
+
+// Volume, airplay, repeat, shuffle, rating and more
+.nowPlayingBarRight {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+
+    .mediaButton {
+        width: 32px;
+        height: 32px;
+    }
+}
+
+.nowPlayingBar .buttonActive {
+    color: #D97732 !important;
+}
+
+.nowPlayingBarVolumeSliderContainer {
+    width: 93px !important;
+    margin: 0 8px;
+}
+
+.nowPlayingBarUserDataButtons {
+    display: inline-block;
+}
+
+@media all and (max-width: 70em) {
+    .nowPlayingBarRight .nowPlayingBarUserDataButtons {
+        display: none;
+    }
+}
+
+@media all and (max-width: 66em) {
+    .toggleRepeatButton {
+        display: none !important;
+    }
+
+    .nowPlayingBar .btnShuffleQueue {
+        display: none !important;
+    }
+}
+
+@media all and (max-width: 80em) {
+    .nowPlayingBarCurrentTime {
+        display: none !important;
+    }
+}
+
+@media all and (max-width: 60em) {
+    .nowPlayingBarRight .nowPlayingBarVolumeSliderContainer {
+        display: none !important;
+    }
+}
+
+.layout-mobile .nowPlayingBarRight button:not(.playPauseButton, .nextTrackButton) {
+    display: none;
+}
+
+.layout-desktop .nowPlayingBarRight .playPauseButton,
+.layout-tv .nowPlayingBarRight .playPauseButton {
+    display: none;
+}
+
+.layout-mobile .nowPlayingBarRight input,
+.layout-mobile .nowPlayingBarRight div {
+    display: none;
+}
+
+@media all and (max-width: 56em) {
+    .nowPlayingBarCenter {
+        display: none !important;
+    }
+
+    .nowPlayingBarTop {
+        grid-template-columns: minmax(0, 1fr) auto;
+    }
+}
+
+@media all and (max-width: 24em) {
+    .nowPlayingBar .muteButton,
+    .nowPlayingBar .unmuteButton {
+        display: none;
+    }
+}

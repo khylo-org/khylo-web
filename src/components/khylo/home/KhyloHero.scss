@@ -1,0 +1,589 @@
+/* Khylo Cinematic Home Hero Section (Specs 33–47, 136, 150–151) */
+
+.khylo-hero {
+    position: relative;
+    width: 100%;
+    height: 54vh;
+    min-height: 440px;
+    max-height: 560px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: flex-start;
+    box-sizing: border-box;
+    margin-bottom: 8px;
+
+    &--skeleton {
+        background: #090A0B;
+    }
+
+    &__backdrop-wrapper {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        z-index: 1;
+        overflow: hidden;
+        pointer-events: none;
+    }
+
+    // Seamless Crossfade Backdrop Slides (300-500ms transition)
+    &__backdrop-slide {
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+        transition: opacity 500ms cubic-bezier(0.16, 1, 0.3, 1);
+        pointer-events: none;
+
+        &--active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+    }
+
+    &__backdrop-img {
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 100%; // Full-bleed cinema backdrop
+        height: 100%;
+        object-fit: cover;
+        object-position: center 15%;
+    }
+
+    // Triple-Fade Edge Dissolve into #090A0B (Specs 38–41)
+    &__gradient-left {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+            90deg,
+            #090A0B 0%,
+            rgba(9, 10, 11, 0.96) 26%,
+            rgba(9, 10, 11, 0.78) 46%,
+            rgba(9, 10, 11, 0.25) 70%,
+            transparent 88%
+        );
+        pointer-events: none;
+    }
+
+    &__gradient-bottom {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 180px;
+        background: linear-gradient(
+            180deg,
+            transparent 0%,
+            rgba(9, 10, 11, 0.15) 30%,
+            rgba(9, 10, 11, 0.65) 60%,
+            rgba(9, 10, 11, 0.95) 85%,
+            #090A0B 100%
+        );
+        pointer-events: none;
+    }
+
+    &__gradient-top {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 140px;
+        background: linear-gradient(
+            180deg,
+            rgba(9, 10, 11, 0.85) 0%,
+            rgba(9, 10, 11, 0.35) 55%,
+            transparent 100%
+        );
+        pointer-events: none;
+    }
+
+    &__gradient-right {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        right: 0;
+        width: 80px;
+        background: linear-gradient(
+            270deg,
+            rgba(9, 10, 11, 0.45) 0%,
+            rgba(9, 10, 11, 0) 100%
+        );
+        pointer-events: none;
+    }
+
+    // Content container aligning with content rails (48px horizontal margin)
+    &__content-container {
+        position: relative;
+        z-index: 2;
+        width: 100%;
+        padding: 0 48px 24px 48px;
+        box-sizing: border-box;
+    }
+
+    &__content {
+        max-width: 640px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        animation: khyloHeroFade 300ms ease;
+    }
+
+    &__logo-wrap {
+        max-width: 440px;
+        margin-bottom: 6px;
+    }
+
+    &__logo-img {
+        max-width: 100%;
+        max-height: 88px;
+        width: auto;
+        height: auto;
+        object-fit: contain;
+        object-position: left bottom;
+        filter: drop-shadow(0 4px 20px rgba(0, 0, 0, 0.9));
+    }
+
+    // Spec 42: Small Orange Kicker
+    &__context-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        color: #D97732;
+        text-transform: uppercase;
+    }
+
+    &__context-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background-color: #D97732;
+        box-shadow: 0 0 8px rgba(217, 119, 50, 0.6);
+    }
+
+    // Spec 43: Bold 52-72px typographic title
+    &__title {
+        font-size: clamp(2.4rem, 4vw, 3.8rem);
+        font-weight: 800;
+        line-height: 1.08;
+        letter-spacing: -0.03em;
+        color: #F4F1EC;
+        margin: 0;
+        text-shadow: 0 4px 24px rgba(0, 0, 0, 0.85);
+    }
+
+    &__episode-title {
+        font-size: 1.15rem;
+        font-weight: 600;
+        color: #D5CEC6;
+        margin-top: -3px;
+        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.7);
+    }
+
+    // Spec 42: Compact metadata row
+    &__metadata {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 8px;
+        font-size: 0.92rem;
+        font-weight: 500;
+        color: #B4AEA7;
+        margin-top: 2px;
+    }
+
+    &__metadata-sep {
+        color: #858079;
+        font-weight: 400;
+        padding: 0 2px;
+    }
+
+    &__rating-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 1px 6px;
+        border-radius: 4px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        color: #D5CEC6;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        letter-spacing: 0.04em;
+    }
+
+    &__quality-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 1px 6px;
+        border-radius: 4px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        color: #D97732;
+        background: rgba(217, 119, 50, 0.12);
+        border: 1px solid rgba(217, 119, 50, 0.3);
+        letter-spacing: 0.04em;
+    }
+
+    &__audio-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 1px 6px;
+        border-radius: 4px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        color: #B4AEA7;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        letter-spacing: 0.04em;
+    }
+
+    // Spec 45: Playback Progress Bar
+    &__progress-container {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-top: 4px;
+    }
+
+    &__progress-track {
+        width: 220px;
+        height: 4px;
+        background: rgba(255, 255, 255, 0.16);
+        border-radius: 2px;
+        overflow: hidden;
+    }
+
+    &__progress-fill {
+        height: 100%;
+        background-color: #D97732;
+        border-radius: 2px;
+        transition: width 300ms ease;
+    }
+
+    &__progress-label {
+        font-size: 0.78rem;
+        font-weight: 500;
+        color: #B4AEA7;
+    }
+
+    // Spec 44: Synopsis (2 lines max)
+    &__summary {
+        font-size: 0.92rem;
+        line-height: 1.5;
+        color: #B4AEA7;
+        margin: 4px 0 8px;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.7);
+        max-width: 580px;
+    }
+
+    // Spec 46: Action Controls
+    &__actions {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin-top: 6px;
+    }
+
+    &__play-btn {
+        min-width: 165px;
+    }
+
+    &__details-btn {
+        min-width: 130px;
+    }
+
+    &__bookmark-btn {
+        width: 48px;
+        height: 48px;
+    }
+
+    // Subtle Carousel Controls
+    &__carousel-controls {
+        position: absolute;
+        bottom: 24px;
+        right: 120px;
+        z-index: 10;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    &__carousel-arrow {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        background-color: rgba(21, 21, 22, 0.7);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: #B4AEA7;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 140ms ease;
+
+        svg {
+            font-size: 1.25rem;
+        }
+
+        &:hover {
+            background-color: rgba(255, 255, 255, 0.14);
+            color: #F4F1EC;
+            transform: scale(1.06);
+        }
+
+        &:focus-visible {
+            outline: 2px solid #D97732;
+            outline-offset: 2px;
+        }
+    }
+
+    &__carousel-dots {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    &__dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background-color: rgba(255, 255, 255, 0.22);
+        border: none;
+        cursor: pointer;
+        padding: 0;
+        transition: all 220ms ease;
+
+        &--active {
+            background-color: #D97732;
+            width: 20px;
+            border-radius: 3px;
+        }
+
+        &:hover:not(.khylo-hero__dot--active) {
+            background-color: rgba(255, 255, 255, 0.45);
+        }
+    }
+
+    // Netflix-style Maturity Rating Badge on the right edge
+    &__maturity-badge {
+        position: absolute;
+        right: 0;
+        bottom: 24px;
+        z-index: 10;
+        display: flex;
+        align-items: center;
+        background: rgba(18, 19, 21, 0.72);
+        border-left: 3.5px solid #D97732;
+        padding: 6px 14px 6px 10px;
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+    }
+
+    &__maturity-text {
+        font-size: 0.84rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        color: #F4F1EC;
+        text-transform: uppercase;
+    }
+}
+
+@keyframes khyloHeroFade {
+    from {
+        opacity: 0.35;
+        transform: translateY(4px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 900px) {
+    .khylo-hero {
+        height: auto;
+        min-height: 440px;
+        padding: 40px 0;
+
+        &__backdrop-img {
+            width: 100%;
+            opacity: 0.35;
+        }
+
+        &__title {
+            font-size: 2.2rem;
+        }
+
+        &__carousel-controls {
+            display: none;
+        }
+    }
+}
+
+/* ---------------------------------------------------------------------------------------------
+ * 2026 refresh: the TV app's look on the web. A taller full-bleed billboard under the floating
+ * top bar, less chrome (no kicker, no side badge), a solid white Play and quiet glass buttons.
+ * ------------------------------------------------------------------------------------------- */
+.khylo-hero {
+    height: 78vh;
+    min-height: 560px;
+    max-height: 820px;
+    margin-bottom: 0;
+
+    &__gradient-left {
+        background: linear-gradient(
+            90deg,
+            rgba(9, 10, 11, 0.94) 0%,
+            rgba(9, 10, 11, 0.78) 24%,
+            rgba(9, 10, 11, 0.35) 50%,
+            transparent 74%
+        );
+    }
+
+    &__gradient-bottom {
+        height: 320px;
+        background: linear-gradient(180deg, transparent 0%, rgba(9, 10, 11, 0.55) 45%, #090A0B 100%);
+    }
+
+    &__content-container {
+        padding: 0 56px 64px;
+    }
+
+    &__content {
+        max-width: 620px;
+        gap: 14px;
+    }
+
+    // The artwork and logo say "featured" well enough on their own
+    &__context-tag,
+    &__maturity-badge {
+        display: none;
+    }
+
+    &__logo-wrap {
+        max-width: 520px;
+        margin-bottom: 10px;
+    }
+
+    &__logo-img {
+        max-height: 132px;
+    }
+
+    &__metadata {
+        font-size: 0.95rem;
+        color: rgba(255, 255, 255, 0.86);
+        gap: 10px;
+    }
+
+    // Rating and quality as quiet outlined chips, like the TV app
+    &__rating-badge,
+    &__quality-badge,
+    &__audio-badge {
+        background: transparent;
+        color: rgba(255, 255, 255, 0.82);
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        border-radius: 3px;
+        padding: 0 5px;
+        font-size: 0.72rem;
+        font-weight: 600;
+        letter-spacing: 0;
+        line-height: 1.5;
+    }
+
+    &__summary {
+        font-size: 1rem;
+        line-height: 1.55;
+        color: rgba(255, 255, 255, 0.82);
+        -webkit-line-clamp: 3;
+        max-width: 600px;
+    }
+
+    &__actions {
+        gap: 12px;
+        margin-top: 10px;
+    }
+
+    // Play: solid white, the one bright thing on the screen
+    &__play-btn.khylo-btn {
+        background: #FFFFFF;
+        color: #0B0B0C;
+        border: none;
+        border-radius: 10px;
+        box-shadow: none;
+        min-width: 150px;
+
+        &:hover {
+            background: #E9E6E1;
+            color: #0B0B0C;
+            transform: scale(1.03);
+        }
+    }
+
+    &__details-btn.khylo-btn,
+    &__bookmark-btn.khylo-btn {
+        background: rgba(255, 255, 255, 0.16);
+        color: #FFFFFF;
+        border: none;
+        border-radius: 10px;
+        box-shadow: none;
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+
+        &:hover {
+            background: #FFFFFF;
+            color: #0B0B0C;
+            transform: scale(1.03);
+        }
+    }
+
+    &__bookmark-btn.khylo-btn {
+        border-radius: 50%;
+    }
+
+    // Slide controls stay out of the way until you point at the billboard
+    &__carousel-controls {
+        right: 56px;
+        bottom: 72px;
+    }
+
+    &__carousel-arrow {
+        opacity: 0;
+        transition: opacity 200ms ease, background-color 140ms ease, transform 140ms ease;
+    }
+
+    &:hover &__carousel-arrow {
+        opacity: 1;
+    }
+
+    &__dot--active {
+        background-color: #FFFFFF;
+    }
+}
+
+@media (max-width: 900px) {
+    .khylo-hero {
+        height: auto;
+        min-height: 520px;
+        padding-top: 68px;
+
+        &__content-container {
+            padding: 0 20px 36px;
+        }
+
+        &__backdrop-img {
+            opacity: 0.55;
+        }
+    }
+}

@@ -1,0 +1,214 @@
+@use './userPreferences' as *;
+
+@mixin fullpage {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+}
+
+@keyframes fadein {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+.splashLogo {
+    animation: fadein 0.5s;
+    width: 30%;
+    height: 30%;
+    background-image: url(../assets/img/khylo-icon.png);
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-size: contain;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+@media screen
+    and (min-device-width: 992px) {
+    .splashLogo {
+        background-image: url(../assets/img/khylo-logo.png);
+    }
+}
+
+html {
+    @include fullpage;
+
+    font-family: "Noto Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.45;
+    background-color: #090A0B;
+    color: #F4F1EC;
+}
+
+body {
+    @include fullpage;
+    overflow-x: hidden;
+    background-color: #090A0B;
+    color: #F4F1EC;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+html.transparentDocument,
+body.transparentDocument {
+    background: transparent !important;
+    background-color: transparent !important;
+}
+
+#reactRoot {
+    height: 100%;
+}
+
+/* Khylo Liquid Glass & Depth Utilities (Specs 8, 9, 11) */
+.khylo-liquid-glass {
+    background: rgba(18, 19, 20, 0.55);
+    backdrop-filter: blur(24px) saturate(120%);
+    -webkit-backdrop-filter: blur(24px) saturate(120%);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.28);
+}
+
+.khylo-surface-elevated {
+    background: #121314;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 12px;
+}
+
+
+.clipForScreenReader {
+    clip: rect(1px, 1px, 1px, 1px);
+    clip-path: inset(50%);
+    height: 1px;
+    width: 1px;
+    margin: -1px;
+    overflow: hidden;
+    padding: 0;
+    position: absolute;
+}
+
+.material-icons {
+    /* Fix font ligatures on older WebOS versions */
+    font-feature-settings: "liga";
+}
+
+.backgroundContainer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    bottom: 0;
+    contain: strict;
+    /* Only a backdrop: clicks go through to the page, never stop on it */
+    pointer-events: none;
+}
+
+.layout-mobile,
+.layout-tv {
+    -webkit-touch-callout: none;
+    user-select: none;
+}
+
+.mainAnimatedPage {
+    contain: style size !important;
+}
+
+.pageContainer {
+    overflow-x: visible !important;
+}
+
+.bodyWithPopupOpen {
+    overflow-y: hidden !important;
+}
+
+div[data-role="page"] {
+    outline: 0;
+}
+
+.pageTitle {
+    margin-top: 0;
+    font-family: inherit;
+}
+
+.fieldDescription {
+    padding-left: 0.15em;
+    font-weight: 400;
+    white-space: normal !important;
+
+    + .fieldDescription {
+        margin-top: 0.3em;
+    }
+}
+
+.content-primary,
+.padded-bottom-page,
+.page,
+.pageWithAbsoluteTabs .pageTabContent {
+    /* provides room for the music controls */
+    padding-bottom: 5em !important;
+    padding-bottom: calc(env(safe-area-inset-bottom) + 5em) !important;
+}
+
+.readOnlyContent {
+    @media all and (min-width: 50em) {
+        max-width: 54em;
+    }
+}
+
+form {
+    @media all and (min-width: 50em) {
+        max-width: 54em;
+    }
+}
+
+.mediaInfoContent {
+    margin-left: auto;
+    margin-right: auto;
+    width: 85%;
+}
+
+.headroom {
+    will-change: transform;
+    transition: transform 200ms linear;
+
+    &--pinned {
+        transform: translateY(0%);
+    }
+
+    &--unpinned {
+        transform: translateY(-100%);
+    }
+}
+
+.drawerContent {
+    /* make sure the bottom of the drawer is visible when music is playing */
+    padding-bottom: 4em;
+}
+
+.force-scroll {
+    overflow-y: scroll;
+}
+
+.hide-scroll {
+    overflow-y: hidden;
+}
+
+.w-100 {
+    width: 100%;
+}
+
+.margin-auto-x {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.margin-auto-y {
+    margin-top: auto;
+    margin-bottom: auto;
+}
+

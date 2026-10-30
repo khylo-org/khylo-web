@@ -1,0 +1,216 @@
+.khylo-nav-rail {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 76px;
+    background-color: rgba(14, 15, 16, 0.96);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-right: 1px solid rgba(255, 255, 255, 0.06);
+    display: flex;
+    flex-direction: column;
+    z-index: 1200;
+    transition: width 220ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 220ms ease;
+    overflow: hidden;
+    user-select: none;
+    box-sizing: border-box;
+
+    &--expanded {
+        width: 215px; // Desktop target 210-225px per Spec 17
+        box-shadow: 12px 0 36px rgba(0, 0, 0, 0.65);
+    }
+
+    &--pinned {
+        width: 215px !important;
+        box-shadow: none !important;
+    }
+
+    &__header {
+        height: 68px;
+        display: flex;
+        align-items: center;
+        padding: 0 16px 0 20px;
+        gap: 14px;
+        flex-shrink: 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        outline: none;
+    }
+
+    &__pin-btn {
+        margin-left: auto;
+        background: transparent;
+        border: none;
+        color: #858079;
+        cursor: pointer;
+        padding: 6px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 160ms ease;
+
+        &:hover {
+            color: #D97732;
+            background: rgba(255, 255, 255, 0.08);
+        }
+    }
+
+    &__brand-mark {
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    &__logo-img {
+        width: 32px;
+        height: 32px;
+        object-fit: contain;
+    }
+
+    &__brand-name {
+        font-size: 1.15rem;
+        font-weight: 800;
+        letter-spacing: 0.15em;
+        color: #F4F1EC;
+        white-space: nowrap;
+        opacity: 0;
+        animation: khylo-fade-in 180ms forwards;
+    }
+
+    &__scroll-container {
+        flex: 1;
+        overflow-y: auto;
+        overflow-x: hidden;
+        padding: 12px 0 24px;
+        scrollbar-width: none;
+
+        &::-webkit-scrollbar {
+            display: none;
+        }
+    }
+
+    &__section {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        padding: 0 10px;
+    }
+
+    &__section-title {
+        font-size: 0.6875rem; // 11px per Spec 19
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: #858079;
+        padding: 10px 14px 4px;
+        white-space: nowrap;
+    }
+
+    &__divider {
+        height: 1px;
+        background-color: rgba(255, 255, 255, 0.05);
+        margin: 8px 14px;
+    }
+
+    &__item {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        height: 42px;
+        padding: 0 12px;
+        border-radius: 8px;
+        background: transparent;
+        border: none;
+        color: #B4AEA7;
+        font-family: inherit;
+        font-size: 0.9rem; // 14-15px per Spec 20
+        font-weight: 500;
+        cursor: pointer;
+        outline: none;
+        transition: all 140ms ease;
+        text-align: left;
+        width: 100%;
+        box-sizing: border-box;
+
+        &:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+            color: #F4F1EC;
+
+            .khylo-nav-rail__item-icon {
+                color: #F4F1EC;
+            }
+        }
+
+        &:focus-visible {
+            background-color: rgba(255, 255, 255, 0.08);
+            outline: 2px solid #D97732;
+            outline-offset: -2px;
+        }
+
+        // Active State - Spec 21 (Subtle dark surface + orange edge, NOT giant orange pill)
+        &--active {
+            background-color: rgba(255, 255, 255, 0.05) !important;
+            color: #F4F1EC !important;
+            font-weight: 600;
+
+            .khylo-nav-rail__item-icon {
+                color: #D97732 !important;
+            }
+
+            .khylo-nav-rail__item-indicator {
+                opacity: 1;
+            }
+        }
+    }
+
+    &__item-indicator {
+        position: absolute;
+        left: 0;
+        top: 9px;
+        bottom: 9px;
+        width: 2.5px;
+        border-radius: 0 2px 2px 0;
+        background-color: #D97732;
+        opacity: 0;
+        transition: opacity 140ms ease;
+    }
+
+    &__item-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 22px;
+        height: 22px;
+        color: #B4AEA7;
+        flex-shrink: 0;
+        transition: color 140ms ease;
+
+        svg {
+            font-size: 1.25rem; // ~20px per Spec 20
+        }
+    }
+
+    &__item-label {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        opacity: 0;
+        animation: khylo-fade-in 180ms forwards;
+    }
+}
+
+@keyframes khylo-fade-in {
+    from {
+        opacity: 0;
+        transform: translateX(-4px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}

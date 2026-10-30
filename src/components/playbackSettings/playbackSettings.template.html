@@ -1,0 +1,347 @@
+<form style="margin: 0 auto;">
+    <a href="#/mypreferencesmenu" class="khylo-settings-back-link">← ${Settings}</a>
+
+    <div class="verticalSection verticalSection-extrabottompadding khylo-smart-playback-section">
+        <h2 class="sectionTitle" style="display: flex; align-items: center; gap: 8px;">
+            <span class="material-icons" style="color: #6366f1;">auto_mode</span>
+            Khylo Smart Playback &amp; Binge Controls
+        </h2>
+        <div class="fieldDescription" style="margin-bottom: 1.5em; color: #a1a1aa; line-height: 1.4;">
+            Enjoy premium smart playback features for free — automatically skip intros &amp; credits, customize countdown timers, and protect your sleep schedule.
+        </div>
+
+        <!-- Auto-Skip Intro -->
+        <div class="checkboxContainer checkboxContainer-withDescription">
+            <label>
+                <input type="checkbox" is="khylo-checkbox" class="chkAutoSkipIntro" />
+                <span>Automatically Skip Intros</span>
+            </label>
+            <div class="fieldDescription checkboxFieldDescription">Automatically skip TV episode intros when detected without needing manual clicks.</div>
+        </div>
+
+        <div class="selectContainer fldAutoSkipIntroDelay" style="margin-bottom: 1.5em; max-width: 320px;">
+            <select is="khylo-select" class="selectAutoSkipIntroDelay" label="Intro Skip Countdown Delay">
+                <option value="0">Instant (0 seconds)</option>
+                <option value="2">2 seconds</option>
+                <option value="3">3 seconds (Recommended)</option>
+                <option value="5">5 seconds</option>
+                <option value="10">10 seconds</option>
+            </select>
+            <div class="fieldDescription">How long to display the 'Skip Intro' prompt before auto-skipping.</div>
+        </div>
+
+        <!-- Auto-Skip Credits -->
+        <div class="checkboxContainer checkboxContainer-withDescription">
+            <label>
+                <input type="checkbox" is="khylo-checkbox" class="chkAutoSkipCredits" />
+                <span>Automatically Skip Credits</span>
+            </label>
+            <div class="fieldDescription checkboxFieldDescription">Automatically advance to the next episode when credits roll.</div>
+        </div>
+
+        <div class="selectContainer fldAutoSkipCreditsDelay" style="margin-bottom: 1.5em; max-width: 320px;">
+            <select is="khylo-select" class="selectAutoSkipCreditsDelay" label="Credits Skip Countdown Delay">
+                <option value="0">Instant (0 seconds)</option>
+                <option value="3">3 seconds</option>
+                <option value="5">5 seconds (Recommended)</option>
+                <option value="8">8 seconds</option>
+                <option value="10">10 seconds</option>
+            </select>
+            <div class="fieldDescription">How long to wait before auto-advancing past credits.</div>
+        </div>
+
+        <!-- Auto-Play Next Episode -->
+        <div class="checkboxContainer checkboxContainer-withDescription">
+            <label>
+                <input type="checkbox" is="khylo-checkbox" class="chkAutoPlayNext" />
+                <span>Auto-Play Next Episode</span>
+            </label>
+            <div class="fieldDescription checkboxFieldDescription">Automatically play the next episode when the current episode ends. Enabled by default.</div>
+        </div>
+
+        <div class="selectContainer fldAutoPlayNextDelay" style="margin-bottom: 1.5em; max-width: 320px;">
+            <select is="khylo-select" class="selectAutoPlayNextDelay" label="Next Episode Countdown Delay">
+                <option value="0">Instant (0 seconds)</option>
+                <option value="5">5 seconds</option>
+                <option value="10">10 seconds</option>
+                <option value="15">15 seconds (Default)</option>
+                <option value="30">30 seconds</option>
+            </select>
+            <div class="fieldDescription">Countdown timer before launching the next episode. Default is 15 seconds.</div>
+        </div>
+
+        <!-- Sleep Protection -->
+        <div class="selectContainer fldSleepProtection" style="max-width: 320px;">
+            <select is="khylo-select" class="selectSleepProtection" label="Sleep Protection (Auto-Pause Timer)">
+                <option value="off">Off (Continuous Playback)</option>
+                <option value="1">1 Hour</option>
+                <option value="2">2 Hours (Default)</option>
+                <option value="3">3 Hours</option>
+                <option value="4">4 Hours</option>
+            </select>
+            <div class="fieldDescription">Stops continuous auto-play and prompts 'Are you still watching?' so you never sleep through an entire season.</div>
+        </div>
+    </div>
+
+    <div class="verticalSection verticalSection-extrabottompadding">
+        <h2 class="sectionTitle">
+            ${HeaderAudioSettings}
+        </h2>
+
+        <div class="selectContainer">
+            <select is="khylo-select" id="selectAllowedAudioChannels" label="${LabelAllowedAudioChannels}">
+                <option value="-1">${Auto}</option>
+                <option value="1">${LabelSelectMono}</option>
+                <option value="2">${LabelSelectStereo}</option>
+                <option value="6">5.1 ${LabelSelectAudioChannels}</option>
+                <option value="8">7.1 ${LabelSelectAudioChannels}</option>
+            </select>
+        </div>
+
+        <div class="selectContainer">
+            <select is="khylo-select" id="selectAudioLanguage" label="${LabelAudioLanguagePreference}"></select>
+        </div>
+
+        <label class="checkboxContainer">
+            <input type="checkbox" is="khylo-checkbox" class="chkPlayDefaultAudioTrack" />
+            <span>${LabelPlayDefaultAudioTrack}</span>
+        </label>
+
+        <div class="checkboxContainer checkboxContainer-withDescription">
+            <label>
+                <input type="checkbox" is="khylo-checkbox" class="chkDisableVbrAudioEncoding" />
+                <span>${LabelDisableVbrAudioEncoding}</span>
+            </label>
+            <div class="fieldDescription checkboxFieldDescription">${DisableVbrAudioEncodingHelp}</div>
+        </div>
+    </div>
+
+    <div class="qualitySections hide">
+        <div class="verticalSection verticalSection-extrabottompadding videoQualitySection hide">
+            <h2 class="sectionTitle">
+                ${HeaderVideoQuality}
+            </h2>
+
+            <div class="selectContainer fldVideoInNetworkQuality hide">
+                <select is="khylo-select" class="selectVideoInNetworkQuality" label="${LabelHomeNetworkQuality}"></select>
+            </div>
+
+            <div class="selectContainer fldVideoInternetQuality hide">
+                <select is="khylo-select" class="selectVideoInternetQuality" label="${LabelInternetQuality}"></select>
+            </div>
+
+            <div class="selectContainer fldChromecastQuality hide">
+                <select is="khylo-select" class="selectChromecastVideoQuality" label="${LabelMaxChromecastBitrate}"></select>
+            </div>
+
+            <div class="selectContainer">
+                <select is="khylo-select" class="selectMaxVideoWidth" label="${LabelMaxVideoResolution}">
+                    <option value="0">${Auto}</option>
+                    <option value="-1">${ScreenResolution}</option>
+                    <option value="640">360p</option>
+                    <option value="852">480p</option>
+                    <option value="1280">720p</option>
+                    <option value="1920">1080p</option>
+                    <option value="3840">4K</option>
+                    <option value="7680">8K</option>
+                </select>
+            </div>
+
+            <div class="checkboxContainer checkboxContainer-withDescription">
+                <label>
+                    <input type="checkbox" is="khylo-checkbox" class="chkLimitSupportedVideoResolution" />
+                    <span>${LimitSupportedVideoResolution}</span>
+                </label>
+                <div class="fieldDescription checkboxFieldDescription">${LimitSupportedVideoResolutionHelp}</div>
+            </div>
+        </div>
+
+        <div class="verticalSection verticalSection-extrabottompadding musicQualitySection hide">
+            <h2>
+                ${HeaderMusicQuality}
+            </h2>
+
+            <div class="selectContainer">
+                <select is="khylo-select" class="selectMusicInternetQuality" label="${LabelInternetQuality}"></select>
+            </div>
+        </div>
+    </div>
+
+    <div class="verticalSection verticalSection-extrabottompadding">
+        <h2 class="sectionTitle">
+            ${TabAdvanced}
+        </h2>
+
+        <div class="checkboxContainer checkboxContainer-withDescription">
+            <label>
+                <input type="checkbox" is="khylo-checkbox" class="chkPreferFmp4HlsContainer" />
+                <span>${PreferFmp4HlsContainer}</span>
+            </label>
+            <div class="fieldDescription checkboxFieldDescription">${PreferFmp4HlsContainerHelp}</div>
+        </div>
+
+        <div class="checkboxContainer checkboxContainer-withDescription cinemaModeOptions">
+            <label>
+                <input type="checkbox" is="khylo-checkbox" class="chkEnableCinemaMode" />
+                <span>${EnableCinemaMode}</span>
+            </label>
+            <div class="fieldDescription checkboxFieldDescription">${CinemaModeConfigurationHelp}</div>
+        </div>
+
+        <div class="checkboxContainer fldEpisodeAutoPlay">
+            <label>
+                <input type="checkbox" is="khylo-checkbox" class="chkEpisodeAutoPlay" />
+                <span>${PlayNextEpisodeAutomatically}</span>
+            </label>
+        </div>
+
+        <div class="selectContainer fldStillWatchingOption hide">
+            <select is="khylo-select" class="selectStillWatchingOption" label="${StillWatchingPrompt}"></select>
+        </div>
+
+        <div class="checkboxContainer checkboxContainer-withDescription">
+            <label>
+                <input type="checkbox" is="khylo-checkbox" class="chkRememberAudioSelections" />
+                <span>${RememberAudioSelections}</span>
+            </label>
+            <div class="fieldDescription checkboxFieldDescription">${RememberAudioSelectionsHelp}</div>
+        </div>
+
+        <div class="checkboxContainer checkboxContainer-withDescription">
+            <label>
+                <input type="checkbox" is="khylo-checkbox" class="chkRememberSubtitleSelections" />
+                <span>${RememberSubtitleSelections}</span>
+            </label>
+            <div class="fieldDescription checkboxFieldDescription">${RememberSubtitleSelectionsHelp}</div>
+        </div>
+
+        <div class="checkboxContainer checkboxContainer-withDescription fldEnableNextVideoOverlay">
+            <label>
+                <input type="checkbox" is="khylo-checkbox" class="chkEnableNextVideoOverlay" />
+                <span>${EnableNextVideoInfoOverlay}</span>
+            </label>
+            <div class="fieldDescription checkboxFieldDescription">${EnableNextVideoInfoOverlayHelp}</div>
+        </div>
+
+        <div class="checkboxContainer fldExternalPlayer checkboxContainer-withDescription hide">
+            <label>
+                <input type="checkbox" is="khylo-checkbox" class="chkExternalVideoPlayer" />
+                <span>${EnableExternalVideoPlayers}</span>
+            </label>
+            <div class="fieldDescription checkboxFieldDescription">
+                <div class="labelNativeExternalPlayers">${EnableExternalVideoPlayersHelp}</div>
+            </div>
+        </div>
+
+        <div class="selectContainer">
+            <select is="khylo-select" class="selectChromecastVersion" label="${LabelChromecastVersion}"></select>
+        </div>
+
+        <div class="selectContainer">
+            <select is="khylo-select" class="selectSkipForwardLength" label="${LabelSkipForwardLength}"></select>
+        </div>
+
+        <div class="selectContainer">
+            <select is="khylo-select" class="selectSkipBackLength" label="${LabelSkipBackLength}"></select>
+        </div>
+
+        <h3 class="sectionTitle">${HeaderMediaSegmentActions}</h3>
+        <div class="mediaSegmentActionContainer"></div>
+    </div>
+
+    <div class="verticalSection verticalSection-extrabottompadding">
+        <h2 class="sectionTitle">
+            ${HeaderVideoAdvanced}
+        </h2>
+
+        <div class="checkboxContainer checkboxContainer-withDescription fldEnableDts">
+            <label>
+                <input type="checkbox" is="khylo-checkbox" class="chkEnableDts" />
+                <span>${EnableDts}</span>
+            </label>
+            <div class="fieldDescription checkboxFieldDescription">${EnableDtsHelp}</div>
+        </div>
+
+        <div class="checkboxContainer checkboxContainer-withDescription fldEnableTrueHd">
+            <label>
+                <input type="checkbox" is="khylo-checkbox" class="chkEnableTrueHd" />
+                <span>${EnableTrueHd}</span>
+            </label>
+            <div class="fieldDescription checkboxFieldDescription">${EnableTrueHdHelp}</div>
+        </div>
+
+        <div class="checkboxContainer checkboxContainer-withDescription fldEnableHi10p hide">
+             <label>
+                 <input type="checkbox" is="khylo-checkbox" class="chkEnableHi10p" />
+                 <span>${EnableHi10p}</span>
+             </label>
+             <div class="fieldDescription checkboxFieldDescription">${EnableHi10pHelp}</div>
+        </div>
+
+        <div class="checkboxContainer checkboxContainer-withDescription fldLimitSegmentLength hide">
+            <label>
+                <input type="checkbox" is="khylo-checkbox" class="chkLimitSegmentLength" />
+                <span>${LimitSegmentLength}</span>
+            </label>
+            <div class="fieldDescription checkboxFieldDescription">${LimitSegmentLengthHelp}</div>
+        </div>
+
+        <div class="selectContainer">
+            <select is="khylo-select" id="selectPreferredTranscodeVideoCodec" label="${LabelSelectPreferredTranscodeVideoCodec}">
+                <option value="">${Auto}</option>
+                <option value="h264">H264</option>
+                <option value="hevc">HEVC</option>
+                <option value="av1">AV1</option>
+            </select>
+            <div class="fieldDescription">${SelectPreferredTranscodeVideoCodecHelp}</div>
+        </div>
+
+        <div class="selectContainer">
+            <select is="khylo-select" id="selectPreferredTranscodeVideoAudioCodec" label="${LabelSelectPreferredTranscodeVideoAudioCodec}">
+                <option value="">${Auto}</option>
+                <option value="aac">AAC</option>
+                <option value="ac3">AC3</option>
+                <option value="alac">ALAC</option>
+                <option value="dts">DTS</option>
+                <option value="flac">FLAC</option>
+                <option value="opus">Opus</option>
+            </select>
+            <div class="fieldDescription">${SelectPreferredTranscodeVideoAudioCodecHelp}</div>
+        </div>
+    </div>
+
+    <div class="verticalSection verticalSection-extrabottompadding">
+        <h2 class="sectionTitle">
+            ${HeaderAudioAdvanced}
+        </h2>
+
+        <div class="selectContainer fldAudioNormalization">
+            <select is="khylo-select" id="selectAudioNormalization" label="${LabelSelectAudioNormalization}">
+                <option value="Off">${Off}</option>
+                <option value="TrackGain">${LabelTrackGain}</option>
+                <option value="AlbumGain">${LabelAlbumGain}</option>
+            </select>
+            <div class="fieldDescription">${SelectAudioNormalizationHelp}</div>
+        </div>
+
+        <div class="checkboxContainer checkboxContainer-withDescription">
+            <label>
+                <input type="checkbox" is="khylo-checkbox" class="chkAlwaysRemuxFlac" />
+                <span>${LabelAlwaysRemuxFlacAudioFiles}</span>
+            </label>
+            <div class="fieldDescription checkboxFieldDescription">${AlwaysRemuxFlacAudioFilesHelp}</div>
+        </div>
+
+        <div class="checkboxContainer checkboxContainer-withDescription">
+            <label>
+                <input type="checkbox" is="khylo-checkbox" class="chkAlwaysRemuxMp3" />
+                <span>${LabelAlwaysRemuxMp3AudioFiles}</span>
+            </label>
+            <div class="fieldDescription checkboxFieldDescription">${AlwaysRemuxMp3AudioFilesHelp}</div>
+        </div>
+    </div>
+
+    <button is="khylo-button" type="submit" class="raised button-submit block btnSave hide">
+        <span>${Save}</span>
+    </button>
+</form>

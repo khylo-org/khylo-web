@@ -1,0 +1,186 @@
+body:has(#loginPage) .skinHeader,
+.dashboardDocument:has(#loginPage) .skinHeader,
+#loginPage ~ .skinHeader,
+.skinHeader:has(~ #loginPage) {
+    display: none !important;
+}
+
+#loginPage {
+    background: radial-gradient(ellipse at 50% 20%, rgba(217, 119, 50, 0.06) 0%, rgba(9, 10, 11, 0.98) 75%) !important;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    .padded-left.padded-right.padded-bottom-page.margin-auto-y {
+        max-width: 440px;
+        width: 100%;
+        margin: 2rem auto !important;
+        background: rgba(24, 24, 26, 0.72);
+        backdrop-filter: blur(28px);
+        -webkit-backdrop-filter: blur(28px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 20px;
+        box-shadow: 0 32px 80px rgba(0, 0, 0, 0.7), 0 0 1px rgba(255, 255, 255, 0.1);
+        padding: 2.75rem 2.25rem 2rem;
+    }
+
+    .khyloLoginBrand {
+        text-align: center;
+        margin-bottom: 2rem;
+
+        .khyloLoginBadge {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 1.25rem;
+            border-radius: 16px;
+            background-color: rgba(217, 119, 50, 0.12);
+            border: 1px solid rgba(217, 119, 50, 0.3);
+            background-image: url('../../../../../assets/img/khylo-icon.png');
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: 40px 40px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+        }
+
+        h1.khyloTitle {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #F4F1EC;
+            letter-spacing: -0.02em;
+            margin: 0 0 0.35rem;
+        }
+
+        p.khyloTagline {
+            font-size: 0.85rem;
+            color: #858079;
+            margin: 0;
+            font-weight: 400;
+            letter-spacing: 0.01em;
+        }
+    }
+
+    .sectionTitle {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #F4F1EC;
+        margin: 0 0 1rem;
+    }
+
+    .manualLoginForm {
+        .inputContainer {
+            margin-bottom: 1.25rem;
+        }
+
+        .khylo-input {
+            background: rgba(255, 255, 255, 0.03) !important;
+            border: 1px solid rgba(255, 255, 255, 0.08) !important;
+            border-radius: 10px !important;
+            padding: 0.8rem 1rem !important;
+            color: #F4F1EC !important;
+            font-size: 0.95rem !important;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+
+            &:focus {
+                border-color: #D97732 !important;
+                box-shadow: 0 0 0 2px rgba(217, 119, 50, 0.25) !important;
+                background: rgba(255, 255, 255, 0.06) !important;
+            }
+        }
+
+        .checkboxContainer {
+            margin: 0.75rem 0 1.5rem;
+            color: #B4AEA7;
+            font-size: 0.875rem;
+        }
+
+        .button-submit {
+            background: #D97732 !important;
+            color: #FFFFFF !important;
+            border-radius: 10px !important;
+            font-weight: 600 !important;
+            font-size: 0.95rem !important;
+            padding: 0.8rem !important;
+            box-shadow: 0 4px 16px rgba(217, 119, 50, 0.25) !important;
+            transition: background 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+
+            &:hover {
+                background: #c46522 !important;
+                transform: translateY(-1px);
+                box-shadow: 0 6px 20px rgba(217, 119, 50, 0.35) !important;
+            }
+
+            &:active {
+                transform: translateY(0);
+            }
+        }
+    }
+
+    .visualLoginForm {
+        .card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            transition: all 0.2s ease;
+
+            &:hover {
+                border-color: rgba(217, 119, 50, 0.4);
+                transform: translateY(-2px);
+                background: rgba(255, 255, 255, 0.06);
+            }
+        }
+    }
+
+    .readOnlyContent {
+        margin-top: 1.5rem !important;
+        border-top: 1px solid rgba(255, 255, 255, 0.06);
+        padding-top: 1.25rem;
+
+        button.raised.cancel,
+        button.raised.btnSelectServer,
+        button.raised.btnManual,
+        button.raised.btnForgotPassword {
+            background: rgba(255, 255, 255, 0.03) !important;
+            border: 1px solid rgba(255, 255, 255, 0.08) !important;
+            color: #B4AEA7 !important;
+            border-radius: 10px !important;
+            margin-bottom: 0.6rem !important;
+            font-weight: 500 !important;
+            font-size: 0.9rem !important;
+            transition: all 0.2s ease;
+
+            &:hover {
+                background: rgba(255, 255, 255, 0.07) !important;
+                color: #F4F1EC !important;
+                border-color: rgba(255, 255, 255, 0.15) !important;
+            }
+        }
+    }
+}
+
+.loginDisclaimerContainer {
+    display: flex;
+    margin-top: 2em;
+}
+
+.loginDisclaimer {
+    margin: 0 auto;
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    p {
+        text-align: center;
+    }
+
+    ol,
+    ul {
+        max-width: 40em;
+        margin-left: auto;
+        margin-right: auto;
+        width: fit-content;
+    }
+}

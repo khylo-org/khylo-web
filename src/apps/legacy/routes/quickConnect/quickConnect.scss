@@ -1,0 +1,168 @@
+// Add a device: approve the code a TV or other device shows
+$text: #f4f1ec;
+$text-secondary: #b4aea7;
+$text-muted: #858079;
+$accent: #d97732;
+$accent-hover: #e8853e;
+$surface: #121314;
+$surface-raised: #1b1c1e;
+$border: rgba(255, 255, 255, 0.08);
+
+.khylo-adddevice {
+    max-width: 520px;
+    margin: 0 auto;
+    padding: 24px 16px 64px;
+
+    &__card {
+        margin-top: 16px;
+        padding: 28px;
+        border: 1px solid $border;
+        border-radius: 14px;
+        background: $surface;
+        color: $text;
+    }
+
+    &__title {
+        margin: 0 0 16px;
+        font-size: 1.5rem;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+    }
+
+    &__steps {
+        margin: 0 0 24px;
+        padding-left: 20px;
+        font-size: 0.9rem;
+        line-height: 1.6;
+        color: $text-secondary;
+
+        strong { color: $text; }
+    }
+
+    &__label {
+        display: block;
+        margin-bottom: 8px;
+        font-size: 0.78rem;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: $text-muted;
+    }
+
+    &__code {
+        box-sizing: border-box;
+        width: 100%;
+        padding: 14px 16px;
+        border: 1px solid $border;
+        border-radius: 10px;
+        background: $surface-raised;
+        color: $text;
+        font-family: inherit;
+        font-size: 2rem;
+        font-weight: 700;
+        letter-spacing: 0.45em;
+        text-align: center;
+        text-transform: uppercase;
+
+        &::placeholder {
+            color: rgba(255, 255, 255, 0.14);
+        }
+
+        &:focus {
+            outline: none;
+            border-color: $accent;
+        }
+    }
+
+    &__help {
+        margin: 8px 0 20px;
+        font-size: 0.82rem;
+        line-height: 1.5;
+        color: $text-muted;
+    }
+
+    &__select {
+        box-sizing: border-box;
+        width: 100%;
+        margin-bottom: 20px;
+        padding: 10px 12px;
+        border: 1px solid $border;
+        border-radius: 10px;
+        background: $surface-raised;
+        color: $text;
+        font: inherit;
+    }
+
+    &__primary {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 12px 20px;
+        border: none;
+        border-radius: 10px;
+        background: $accent;
+        color: #fff;
+        font: inherit;
+        font-weight: 700;
+        text-decoration: none;
+        cursor: pointer;
+
+        &:hover { background: $accent-hover; }
+
+        &:disabled {
+            opacity: 0.45;
+            cursor: default;
+        }
+    }
+
+    &__submit { width: 100%; }
+
+    &__secondary {
+        padding: 12px 20px;
+        border: 1px solid $border;
+        border-radius: 10px;
+        background: transparent;
+        color: $text;
+        font: inherit;
+        font-weight: 600;
+        cursor: pointer;
+
+        &:hover { background: $surface-raised; }
+    }
+
+    &__done {
+        text-align: center;
+    }
+
+    &__check {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 56px;
+        height: 56px;
+        margin-bottom: 12px;
+        border-radius: 50%;
+        background: rgba(52, 211, 153, 0.14);
+        color: #34d399;
+        font-size: 1.6rem;
+    }
+
+    &__done-title {
+        margin: 0 0 4px;
+        font-size: 1.15rem;
+        font-weight: 700;
+    }
+
+    &__lead {
+        margin: 0 0 24px;
+        font-size: 0.9rem;
+        color: $text-secondary;
+    }
+
+    &__actions {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+}

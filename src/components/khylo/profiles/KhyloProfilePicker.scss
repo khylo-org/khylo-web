@@ -1,0 +1,361 @@
+// "Who's watching?": home profiles, full screen
+$text: #f4f1ec;
+$text-secondary: #b4aea7;
+$text-muted: #858079;
+$accent: #d97732;
+$surface: #141516;
+$border: rgba(255, 255, 255, 0.1);
+
+.khylo-profiles {
+    position: fixed;
+    inset: 0;
+    z-index: 1400;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: safe center;
+    overflow-y: auto;
+    padding: 32px 16px;
+    background: #08090a;
+    color: $text;
+    text-align: center;
+
+    &__close {
+        position: absolute;
+        top: 24px;
+        right: 24px;
+        width: 44px;
+        height: 44px;
+        border: none;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.08);
+        color: $text;
+        cursor: pointer;
+
+        &:hover { background: rgba(255, 255, 255, 0.16); }
+    }
+
+    &__title {
+        margin: 0 0 40px;
+        font-size: clamp(1.8rem, 4vw, 2.8rem);
+        font-weight: 600;
+        letter-spacing: -0.02em;
+    }
+
+    &__grid {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 32px;
+        max-width: 960px;
+    }
+
+    &__profile {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 14px;
+        width: 140px;
+        padding: 0;
+        border: none;
+        background: none;
+        color: $text-secondary;
+        font: inherit;
+        cursor: pointer;
+
+        &:hover,
+        &:focus-visible {
+            outline: none;
+            color: $text;
+        }
+    }
+
+    &__avatar {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        border-radius: 14px;
+        color: #fff;
+        font-weight: 700;
+        transition: transform 150ms ease, box-shadow 150ms ease;
+
+        img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        &--large {
+            width: 140px;
+            height: 140px;
+            font-size: 3.4rem;
+        }
+
+        &--small {
+            width: 88px;
+            height: 88px;
+            margin-bottom: 20px;
+            font-size: 2.2rem;
+        }
+
+        &--add {
+            border: 2px dashed rgba(255, 255, 255, 0.3);
+            background: transparent;
+            color: $text-secondary;
+
+            svg { font-size: 3rem; }
+        }
+    }
+
+    &__profile:hover &__avatar,
+    &__profile:focus-visible &__avatar {
+        box-shadow: 0 0 0 4px #fff;
+        transform: scale(1.04);
+    }
+
+    &__name {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 1.05rem;
+        font-weight: 500;
+    }
+
+    &__lock { font-size: 1rem !important; }
+
+    &__current {
+        margin-top: -8px;
+        font-size: 0.75rem;
+        color: $accent;
+    }
+
+    &__form {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: min(420px, 100%);
+
+        .khylo-profiles__title { margin-bottom: 16px; }
+    }
+
+    &__hint {
+        margin: 0 0 24px;
+        color: $text-muted;
+        font-size: 0.95rem;
+    }
+
+    &__label {
+        align-self: flex-start;
+        margin: 12px 0 6px;
+        font-size: 0.8rem;
+        color: $text-muted;
+    }
+
+    &__input {
+        box-sizing: border-box;
+        width: 100%;
+        padding: 12px 14px;
+        border: 1px solid $border;
+        border-radius: 10px;
+        background: $surface;
+        color: $text;
+        font: inherit;
+        font-size: 1.05rem;
+
+        &:focus {
+            outline: none;
+            border-color: #fff;
+        }
+
+        &--pin {
+            width: 220px;
+            font-size: 2rem;
+            letter-spacing: 0.6em;
+            text-align: center;
+        }
+    }
+
+    &__error {
+        margin: 16px 0 0;
+        color: #ef8f8f;
+    }
+
+    &__actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 28px;
+    }
+
+    &__primary,
+    &__secondary {
+        padding: 12px 24px;
+        border-radius: 10px;
+        font: inherit;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    &__primary {
+        border: none;
+        background: #fff;
+        color: #0b0b0c;
+
+        &:disabled {
+            opacity: 0.4;
+            cursor: default;
+        }
+    }
+
+    &__secondary {
+        border: 1px solid $border;
+        background: transparent;
+        color: $text;
+    }
+
+    &__kids {
+        margin-top: -8px;
+        padding: 2px 10px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.12);
+        color: $text;
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+    }
+
+    &__form--wide {
+        width: min(820px, 100%);
+    }
+
+    &__columns {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 32px;
+        width: 100%;
+        text-align: left;
+    }
+
+    &__group {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        min-width: 0;
+        margin: 0;
+        padding: 0;
+        border: none;
+
+        legend {
+            margin-bottom: 8px;
+            padding: 0;
+            color: $text-muted;
+            font-size: 0.75rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+    }
+
+    &__check {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 10px 12px;
+        border: none;
+        border-radius: 10px;
+        background: transparent;
+        color: $text-secondary;
+        font: inherit;
+        font-weight: 600;
+        text-align: left;
+        cursor: pointer;
+
+        &:hover,
+        &:focus-visible {
+            outline: none;
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        &.is-checked { color: $text; }
+    }
+
+    &__checkmark {
+        display: inline-flex;
+        flex: none;
+        align-items: center;
+        justify-content: center;
+        width: 22px;
+        height: 22px;
+        border: 2px solid rgba(255, 255, 255, 0.4);
+        border-radius: 50%;
+        color: transparent;
+
+        svg { font-size: 15px; }
+    }
+
+    &__check.is-checked &__checkmark {
+        border-color: $accent;
+        background: $accent;
+        color: #fff;
+    }
+
+    &__toggle {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        width: 100%;
+        margin-top: 14px;
+        padding: 10px 12px;
+        border-radius: 10px;
+        text-align: left;
+        cursor: pointer;
+
+        border: none;
+        background: transparent;
+        color: $text;
+        font: inherit;
+
+        &:hover,
+        &:focus-visible {
+            outline: none;
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        strong {
+            display: block;
+            font-weight: 600;
+        }
+
+        small {
+            color: $text-muted;
+            font-size: 0.8rem;
+        }
+    }
+
+    &__switch {
+        position: relative;
+        flex: none;
+        width: 44px;
+        height: 24px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.25);
+        transition: background 150ms ease;
+
+        &::after {
+            content: '';
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #fff;
+            transition: transform 150ms ease;
+        }
+    }
+
+    &__toggle[aria-checked='true'] &__switch { background: $accent; }
+    &__toggle[aria-checked='true'] &__switch::after { transform: translateX(20px); }
+}

@@ -1,0 +1,62 @@
+// Page loading indicator: a thin ring with one orange arc, dead center in the window.
+// It fades in only after a short delay, so quick loads never flash it.
+$spinner-size: 56px;
+$spinner-inset: 10px;
+$spinner-stroke: 2.5px;
+
+.docspinner {
+    position: fixed;
+    inset: 0;
+    z-index: 9999999;
+    width: $spinner-size;
+    height: $spinner-size;
+    margin: auto;
+    border-radius: 50%;
+
+    // A small solid backing so the ring reads over artwork as well as on plain backgrounds
+    background: rgba(12, 13, 14, 0.82);
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.05), 0 10px 30px rgba(0, 0, 0, 0.35);
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 200ms ease, visibility 0s linear 200ms;
+
+    &--active {
+        opacity: 1;
+        visibility: visible;
+        transition: opacity 300ms ease 150ms, visibility 0s;
+    }
+}
+
+.docspinner__ring {
+    position: absolute;
+    inset: $spinner-inset;
+    box-sizing: border-box;
+    border-radius: 50%;
+
+    // Faint full track
+    border: $spinner-stroke solid rgba(244, 241, 236, 0.1);
+
+    // The moving arc: fades from transparent into the accent color along a quarter turn
+    &::after {
+        content: '';
+        position: absolute;
+        inset: -$spinner-stroke;
+        border-radius: 50%;
+        background: conic-gradient(from 0deg, transparent 0deg, transparent 200deg, rgba(217, 119, 50, 0.25) 260deg, #d97732 356deg, transparent 360deg);
+        mask: radial-gradient(farthest-side, transparent calc(100% - #{$spinner-stroke}), #000 calc(100% - #{$spinner-stroke} + 0.5px));
+        animation: docspinner-rotate 900ms linear infinite;
+    }
+}
+
+@keyframes docspinner-rotate {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .docspinner__ring::after {
+        animation-duration: 2400ms;
+    }
+}

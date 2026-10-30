@@ -1,0 +1,32 @@
+<div id="controlsPreferencesPage" data-role="page" class="page userPreferencesPage noSecondaryNavPage" data-title="${Controls}" data-menubutton="true">
+    <div class="padded-left padded-right padded-bottom-page">
+        <form style="margin: 0 auto;">
+            <a href="#/mypreferencesmenu" class="khylo-settings-back-link">← ${Settings}</a>
+            <div class="verticalSection verticalSection-extrabottompadding">
+                <h2 class="sectionTitle">
+                    ${Controls}
+                </h2>
+
+                <div class="checkboxContainer checkboxContainer-withDescription enableGamepadContainer hide">
+                    <label>
+                        <input type="checkbox" is="khylo-checkbox" class="chkEnableGamepad" />
+                        <span>${LabelEnableGamepad}</span>
+                    </label>
+                    <div class="fieldDescription checkboxFieldDescription">${EnableGamepadHelp}</div>
+                    <div class="fieldDescription checkboxFieldDescription">${LabelPleaseRestart}</div>
+                </div>
+
+                <div class="checkboxContainer checkboxContainer-withDescription smoothScrollContainer hide">
+                    <label>
+                        <input type="checkbox" is="khylo-checkbox" class="chkSmoothScroll" />
+                        <span>${EnableSmoothScroll}</span>
+                    </label>
+                </div>
+            </div>
+
+            <button is="khylo-button" type="submit" class="raised button-submit block btnSave hide">
+                <span>${Save}</span>
+            </button>
+        </form>
+    </div>
+</div>

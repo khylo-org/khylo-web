@@ -1,0 +1,201 @@
+// Add to / create / rename collection dialog
+$text: #f4f1ec;
+$text-secondary: #b4aea7;
+$text-muted: #858079;
+$accent: #d97732;
+$surface: #151617;
+$border: rgba(255, 255, 255, 0.08);
+
+.khylo-collection-dialog {
+    width: min(440px, calc(100vw - 32px));
+    max-height: min(640px, calc(100vh - 48px));
+    display: flex;
+    flex-direction: column;
+    margin: 16px !important;
+    border-radius: 16px !important;
+    border: 1px solid $border;
+    background: $surface !important;
+    background-image: none !important;
+    color: $text !important;
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55) !important;
+
+    &__header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 20px 20px 12px;
+    }
+
+    &__title {
+        margin: 0;
+        font-size: 1.15rem;
+        font-weight: 800;
+        letter-spacing: -0.01em;
+    }
+
+    &__subtitle {
+        margin: 4px 0 0;
+        font-size: 0.85rem;
+        color: $text-muted;
+    }
+
+    &__close {
+        flex-shrink: 0;
+        display: inline-flex;
+        padding: 6px;
+        border: none;
+        border-radius: 8px;
+        background: transparent;
+        color: $text-muted;
+        cursor: pointer;
+
+        &:hover {
+            color: $text;
+            background: rgba(255, 255, 255, 0.06);
+        }
+    }
+
+    &__list {
+        flex: 1;
+        min-height: 0;
+        margin: 0;
+        list-style: none;
+        overflow-y: auto;
+        padding: 0 12px;
+        scrollbar-width: thin;
+    }
+
+    &__empty {
+        margin: 8px 8px 16px;
+        font-size: 0.88rem;
+        color: $text-muted;
+    }
+
+    &__row {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 8px;
+        border: none;
+        border-radius: 10px;
+        background: transparent;
+        color: $text;
+        font-family: inherit;
+        text-align: left;
+        cursor: pointer;
+        transition: background-color 150ms ease;
+
+        &:disabled {
+            cursor: progress;
+        }
+
+        &:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.05);
+        }
+    }
+
+    &__check {
+        flex-shrink: 0;
+        width: 22px;
+        height: 22px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 1.5px solid rgba(255, 255, 255, 0.25);
+        border-radius: 6px;
+        transition: background-color 150ms ease, border-color 150ms ease;
+
+        svg {
+            font-size: 1rem;
+        }
+    }
+
+    &__row--in &__check {
+        border-color: $accent;
+        background: $accent;
+        color: #fff;
+    }
+
+    &__row-text {
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    &__row-name {
+        overflow: hidden;
+        font-size: 0.92rem;
+        font-weight: 600;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    &__row-meta {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 0.76rem;
+        color: $text-muted;
+
+        svg {
+            font-size: 0.85rem;
+        }
+    }
+
+    &__footer {
+        padding: 12px 20px 20px;
+        border-top: 1px solid $border;
+    }
+
+    &__list + &__footer {
+        margin-top: 8px;
+    }
+
+    &__form {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    &__input {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 10px 12px;
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.04);
+        color: $text;
+        font-family: inherit;
+        font-size: 0.95rem;
+        outline: none;
+
+        &:focus {
+            border-color: $accent;
+        }
+
+        &::placeholder {
+            color: $text-muted;
+        }
+    }
+
+    &__hint {
+        margin: 0;
+        font-size: 0.78rem;
+        color: $text-muted;
+    }
+
+    &__form-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+    }
+
+    &__error {
+        margin: 0 20px 16px;
+        font-size: 0.85rem;
+        color: #e5a00d;
+    }
+}

@@ -1,0 +1,1841 @@
+// Khylo Music: a three-panel music workspace in the Khylo palette.
+// Near-black frame, rounded panels with 8px gaps, cards that lift on hover,
+// an orange play button that appears on hover, and 56px track rows.
+
+$frame: #090A0B;
+$panel: #121314;
+$card: #171819;
+$card-hover: #1F2022;
+$pill: #1E1F21;
+$row-hover: rgba(255, 255, 255, 0.06);
+$hairline: rgba(255, 255, 255, 0.07);
+$white: #F4F1EC;
+$subdued: #B4AEA7;
+$muted: #858079;
+$accent: #D97732;
+$accent-hover: #B85F22;
+$ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+
+// Geometry (sized for a three-panel layout)
+$side-width: 288px;
+$gap: 8px;
+$player-height: 90px;
+$panel-width: 320px;
+$topbar-height: 68px;
+
+// Room kept clear for the bottom player: its height plus a gap while it shows, else just a gap
+:root {
+    --khylo-player-space: #{$gap};
+}
+
+body:has(.nowPlayingBar:not(.nowPlayingBar-hidden)) {
+    --khylo-player-space: #{$player-height + $gap};
+}
+
+.khylo-music {
+    box-sizing: border-box;
+    width: 100%;
+    color: $white;
+    background-color: transparent;
+
+    // Desktop: the workspace fills the window between the top bar and the player.
+    // Its panels scroll; the page itself never does. The shell leaves room on the left for the sidebar.
+    @media (min-width: 900px) {
+        height: calc(100vh - #{$topbar-height} - var(--khylo-player-space));
+        padding-right: $gap;
+        overflow: hidden;
+    }
+
+    &__stage {
+        display: flex;
+        align-items: stretch;
+        gap: $gap;
+        min-width: 0;
+
+        @media (min-width: 900px) {
+            height: 100%;
+        }
+    }
+
+    &__content {
+        flex: 1;
+        min-width: 0;
+        overflow-y: auto;
+        overflow-x: hidden;
+        background: $panel;
+        border-radius: 8px;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+    }
+
+    &__main,
+    &__artist-hub,
+    &__genre-hub {
+        padding: 0 32px 32px;
+    }
+
+    // Filter pills across the top of the main panel
+    &-nav {
+        position: sticky;
+        top: 0;
+        z-index: 5;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 12px 16px;
+        padding: 16px 32px;
+        background: rgba(18, 19, 20, 0.95);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+
+        &__left {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            min-width: 0;
+        }
+
+        &__brand {
+            display: none;
+        }
+
+        &__tabs {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        &__tab {
+            height: 32px;
+            padding: 0 14px;
+            border: none;
+            border-radius: 500px;
+            background: $pill;
+            color: $white;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 120ms ease;
+
+            &:hover {
+                background: #2A2B2D;
+            }
+
+            &--active {
+                background: $white;
+                color: #090A0B;
+
+                &:hover {
+                    background: $white;
+                    color: #090A0B;
+                }
+            }
+        }
+
+        &__right {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+    }
+
+    &-search {
+        position: relative;
+        display: flex;
+        align-items: center;
+
+        &__icon {
+            position: absolute;
+            left: 12px;
+            color: $subdued;
+            font-size: 1.1rem !important;
+            pointer-events: none;
+        }
+
+        &__input {
+            width: 220px;
+            height: 32px;
+            padding: 0 32px 0 36px;
+            border: none;
+            border-radius: 500px;
+            background: $pill;
+            color: $white;
+            font-size: 0.875rem;
+            outline: none;
+
+            &::placeholder {
+                color: $subdued;
+            }
+
+            &:focus {
+                background: #2A2B2D;
+            }
+        }
+
+        &__clear {
+            position: absolute;
+            right: 10px;
+            padding: 0;
+            border: none;
+            background: none;
+            color: $subdued;
+            font-size: 1.1rem;
+            line-height: 1;
+            cursor: pointer;
+
+            &:hover {
+                color: $white;
+            }
+        }
+    }
+
+    &-sort {
+        &__select {
+            height: 32px;
+            padding: 0 12px;
+            border: none;
+            border-radius: 500px;
+            background: $pill;
+            color: $white;
+            font-size: 0.875rem;
+            cursor: pointer;
+            outline: none;
+
+            option {
+                background: #1E1F21;
+                color: $white;
+            }
+        }
+    }
+
+    &-quickplay-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        height: 32px;
+        padding: 0 14px;
+        border: none;
+        border-radius: 500px;
+        background: $accent;
+        color: #090A0B;
+        font-size: 0.875rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: transform 120ms $ease-out, background-color 120ms ease;
+
+        svg {
+            font-size: 1rem;
+        }
+
+        &:hover {
+            background: $accent-hover;
+            transform: scale(1.04);
+        }
+    }
+
+    &-genre-active {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        margin: 8px 0 0;
+        padding: 4px 4px 4px 14px;
+        border-radius: 500px;
+        background: $pill;
+        color: $subdued;
+        font-size: 0.875rem;
+
+        strong {
+            color: $white;
+        }
+
+        &__clear {
+            height: 26px;
+            padding: 0 12px;
+            border: none;
+            border-radius: 500px;
+            background: #2A2B2D;
+            color: $white;
+            font-size: 0.8125rem;
+            font-weight: 500;
+            cursor: pointer;
+
+            &:hover {
+                background: #353638;
+            }
+        }
+    }
+
+    // Home header: gradient from the featured artwork, greeting, six quick picks
+    &-hero {
+        position: relative;
+        margin: 0 -32px 32px;
+        padding: 40px 32px 24px;
+        overflow: hidden;
+        background: linear-gradient(180deg, #2A2220 0%, $panel 100%);
+
+        &__backdrop {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center 30%;
+            filter: blur(48px) saturate(1.1) brightness(0.6);
+            transform: scale(1.2);
+        }
+
+        &__shade {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, rgba(18, 19, 20, 0.1) 0%, rgba(18, 19, 20, 0.65) 75%, $panel 100%);
+        }
+
+        &__greeting {
+            position: relative;
+            margin: 0 0 20px;
+            font-size: 1.6rem;
+            font-weight: 700;
+            letter-spacing: -0.04em;
+            color: $white;
+        }
+
+        &__picks {
+            position: relative;
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 16px;
+        }
+    }
+
+    // Quick pick: artwork on the left, title beside it
+    &-chip {
+        display: flex;
+        align-items: center;
+        gap: 0;
+        min-width: 0;
+        height: 80px;
+        padding: 0;
+        border: none;
+        border-radius: 4px;
+        overflow: hidden;
+        background: rgba(255, 255, 255, 0.1);
+        color: $white;
+        text-align: left;
+        cursor: pointer;
+        transition: background-color 160ms ease;
+
+        &:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        &__cover {
+            width: 80px;
+            height: 80px;
+            flex-shrink: 0;
+            object-fit: cover;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            &--fallback {
+                background: #1E1F21;
+                color: $subdued;
+            }
+        }
+
+        &__name {
+            min-width: 0;
+            padding: 0 16px;
+            overflow: hidden;
+            font-size: 1rem;
+            font-weight: 700;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+    }
+
+    &__section {
+        margin-bottom: 40px;
+
+        &-head {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        &-title {
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: $white;
+        }
+
+        &-count {
+            display: block;
+            margin-top: 4px;
+            font-size: 0.875rem;
+            color: $muted;
+        }
+
+        &-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        &-more {
+            padding: 0;
+            border: none;
+            background: none;
+            color: $muted;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+
+            &:hover {
+                color: $white;
+            }
+        }
+    }
+
+    &__rail-nav-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        border: none;
+        border-radius: 50%;
+        background: $card;
+        color: $subdued;
+        cursor: pointer;
+
+        &:hover {
+            background: $card-hover;
+            color: $white;
+        }
+
+        svg {
+            font-size: 1.2rem;
+        }
+    }
+
+    // Horizontal rails
+    .khylo-album-rail,
+    .khylo-artist-rail {
+        display: grid;
+        grid-auto-flow: column;
+        gap: 16px;
+        overflow-x: auto;
+        padding: 0 0 8px;
+        scroll-snap-type: x proximity;
+        scrollbar-width: none;
+
+        &::-webkit-scrollbar {
+            display: none;
+        }
+
+        > * {
+            scroll-snap-align: start;
+        }
+    }
+
+    .khylo-album-rail {
+        grid-auto-columns: 180px;
+    }
+
+    .khylo-artist-rail {
+        grid-auto-columns: 180px;
+    }
+
+    .khylo-album-grid,
+    .khylo-artist-grid {
+        display: grid;
+        gap: 16px;
+        width: 100%;
+    }
+
+    .khylo-album-grid {
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    }
+
+    .khylo-artist-grid {
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    }
+
+    // Album card: lifts on hover, play button shows
+    .khylo-album-card {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        padding: 16px;
+        border-radius: 8px;
+        background: $card;
+        cursor: pointer;
+        outline: none;
+        transition: background-color 200ms ease;
+
+        &:hover,
+        &:focus-visible {
+            background: $card-hover;
+
+            .khylo-album-card__play-btn {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        &__cover-box {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            margin-bottom: 16px;
+            border-radius: 4px;
+            overflow: hidden;
+            background: #1E1F21;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+        }
+
+        &__cover-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        &__vinyl-fallback {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, #222326 0%, #0F1011 100%);
+        }
+
+        &__vinyl-groove {
+            position: absolute;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 50%;
+
+            &--2 {
+                width: 65%;
+                height: 65%;
+            }
+
+            &--3 {
+                width: 45%;
+                height: 45%;
+            }
+        }
+
+        &__vinyl-center {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 32%;
+            height: 32%;
+            border-radius: 50%;
+            background: #2A2220;
+
+            svg {
+                font-size: 1.1rem;
+                color: $white;
+            }
+        }
+
+        // Green play button in the bottom-right corner, shown on hover
+        &__play-btn {
+            position: absolute;
+            right: 24px;
+            bottom: 24px;
+            z-index: 2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 48px;
+            height: 48px;
+            padding: 0;
+            border: none;
+            border-radius: 50%;
+            background: $accent;
+            color: #090A0B;
+            box-shadow: 0 8px 8px rgba(0, 0, 0, 0.3);
+            cursor: pointer;
+            opacity: 0;
+            transform: translateY(8px);
+            transition: opacity 200ms ease, transform 200ms $ease-out, background-color 120ms ease;
+
+            svg {
+                font-size: 1.6rem;
+            }
+
+            &:hover {
+                background: $accent-hover;
+                transform: scale(1.06);
+            }
+        }
+
+        &__info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            min-width: 0;
+        }
+
+        &__title {
+            overflow: hidden;
+            font-size: 1rem;
+            font-weight: 700;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            color: $white;
+        }
+
+        &__meta {
+            overflow: hidden;
+            font-size: 0.875rem;
+            line-height: 1.4;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            color: $muted;
+        }
+
+        &__artist-link {
+            cursor: pointer;
+
+            &:hover {
+                color: $white;
+                text-decoration: underline;
+            }
+        }
+    }
+
+    // Artist card: round portrait
+    .khylo-artist-card {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        min-width: 0;
+        padding: 16px;
+        border-radius: 8px;
+        background: $card;
+        cursor: pointer;
+        outline: none;
+        transition: background-color 200ms ease;
+
+        &:hover,
+        &:focus-visible {
+            background: $card-hover;
+
+            .khylo-artist-card__play-btn {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        &__avatar-box {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            margin-bottom: 16px;
+            border-radius: 50%;
+            overflow: hidden;
+            background: #1E1F21;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+        }
+
+        &__avatar-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        &__avatar-monogram {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, #222326 0%, #0F1011 100%);
+            color: $white;
+            font-size: clamp(1.8rem, 3vw, 2.6rem);
+            font-weight: 700;
+            user-select: none;
+        }
+
+        &__play-btn {
+            position: absolute;
+            right: 24px;
+            bottom: 88px;
+            z-index: 2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 48px;
+            height: 48px;
+            padding: 0;
+            border: none;
+            border-radius: 50%;
+            background: $accent;
+            color: #090A0B;
+            box-shadow: 0 8px 8px rgba(0, 0, 0, 0.3);
+            cursor: pointer;
+            opacity: 0;
+            transform: translateY(8px);
+            transition: opacity 200ms ease, transform 200ms $ease-out;
+
+            svg {
+                font-size: 1.6rem;
+            }
+        }
+
+        &__name {
+            max-width: 100%;
+            overflow: hidden;
+            font-size: 1rem;
+            font-weight: 700;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            color: $white;
+        }
+
+        &__role {
+            margin-top: 4px;
+            font-size: 0.875rem;
+            color: $muted;
+        }
+    }
+
+    // Genre tiles
+    .khylo-music-genres-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 16px;
+        width: 100%;
+
+        &--full {
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        }
+    }
+
+    .khylo-music-genre-card {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        align-items: flex-start;
+        min-height: 128px;
+        padding: 16px;
+        box-sizing: border-box;
+        overflow: hidden;
+        border-radius: 8px;
+        cursor: pointer;
+        outline: none;
+        transition: transform 200ms $ease-out;
+
+        &:hover,
+        &:focus-visible {
+            transform: scale(1.02);
+        }
+
+        &--large {
+            min-height: 160px;
+            padding: 20px;
+
+            .khylo-music-genre-card__title {
+                font-size: 1.25rem;
+            }
+        }
+
+        &__info {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            min-width: 0;
+        }
+
+        &__title {
+            display: -webkit-box;
+            overflow: hidden;
+            font-size: 1.125rem;
+            font-weight: 700;
+            line-height: 1.2;
+            color: $white;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+        }
+
+        &__badge {
+            width: fit-content;
+            font-size: 0.8125rem;
+            color: rgba(255, 255, 255, 0.85);
+        }
+
+        &__icon {
+            position: absolute;
+            right: 8px;
+            bottom: 8px;
+            z-index: 0;
+            font-size: 4.5rem !important;
+            color: rgba(0, 0, 0, 0.25);
+            transform: rotate(20deg);
+            pointer-events: none;
+        }
+    }
+
+    // Track lists. Columns are set once on the table so the header and rows always line up.
+    .khylo-track-table {
+        --track-cols: 16px minmax(0, 4fr) minmax(0, 3fr) 72px 72px;
+
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+
+        &--with-artist {
+            --track-cols: 16px minmax(0, 4fr) minmax(0, 3fr) minmax(0, 3fr) 72px 72px;
+        }
+
+        &__header,
+        &__head {
+            display: grid;
+            grid-template-columns: var(--track-cols);
+            align-items: center;
+            column-gap: 16px;
+            padding: 0 16px;
+            height: 36px;
+            margin-bottom: 8px;
+            border-bottom: 1px solid $hairline;
+            font-size: 0.75rem;
+            font-weight: 400;
+            color: $muted;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        &__col,
+        &__th {
+            &--num,
+            &--actions {
+                text-align: center;
+            }
+
+            &--time {
+                text-align: right;
+            }
+        }
+    }
+
+    .khylo-track-row {
+        display: grid;
+        grid-template-columns: var(--track-cols, 16px minmax(0, 4fr) minmax(0, 3fr) 72px 72px);
+        align-items: center;
+        column-gap: 16px;
+        height: 56px;
+        padding: 0 16px;
+        border-radius: 4px;
+        cursor: pointer;
+        outline: none;
+        transition: background-color 120ms ease;
+
+        &:hover,
+        &:focus-visible {
+            background-color: $row-hover;
+
+            .khylo-track-row__index {
+                display: none;
+            }
+
+            .khylo-track-row__play-btn {
+                display: flex;
+            }
+
+            .khylo-track-row__name {
+                color: $white;
+            }
+        }
+
+        &__col {
+            min-width: 0;
+
+            &--num {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 1rem;
+                color: $muted;
+            }
+
+            &--title {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+            }
+
+            &--artist,
+            &--album {
+                overflow: hidden;
+                font-size: 0.875rem;
+                color: $muted;
+                white-space: nowrap;
+                text-overflow: ellipsis;
+            }
+
+            &--time {
+                font-size: 0.875rem;
+                color: $muted;
+                text-align: right;
+                font-variant-numeric: tabular-nums;
+            }
+
+            &--actions {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+        }
+
+        &__index {
+            font-variant-numeric: tabular-nums;
+        }
+
+        &__play-btn {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            padding: 0;
+            border: none;
+            background: none;
+            color: $white;
+            cursor: pointer;
+
+            svg {
+                font-size: 1.25rem;
+            }
+        }
+
+        &__thumb {
+            width: 40px;
+            height: 40px;
+            flex-shrink: 0;
+            border-radius: 2px;
+            object-fit: cover;
+
+            &-fallback {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 40px;
+                height: 40px;
+                flex-shrink: 0;
+                border-radius: 2px;
+                background: #1E1F21;
+                color: $muted;
+            }
+        }
+
+        &__title-wrap {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+
+        &__name {
+            display: block;
+            overflow: hidden;
+            font-size: 1rem;
+            font-weight: 400;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            color: $white;
+        }
+
+        &__artist {
+            display: block;
+            overflow: hidden;
+            font-size: 0.875rem;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            color: $muted;
+        }
+
+        &__album-link {
+            cursor: pointer;
+
+            &:hover {
+                color: $white;
+                text-decoration: underline;
+            }
+        }
+
+        &__fav-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 4px;
+            border: none;
+            background: none;
+            color: $muted;
+            cursor: pointer;
+
+            svg {
+                font-size: 1.125rem;
+            }
+
+            &:hover {
+                color: $white;
+            }
+
+            &--active {
+                color: $accent;
+            }
+        }
+    }
+
+    // Top songs on Home: two columns of compact rows
+    .khylo-track-table--top {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(min(100%, 420px), 1fr));
+        column-gap: 24px;
+    }
+
+    .khylo-track-row--top {
+        grid-template-columns: 40px minmax(0, 1fr) auto 72px;
+        height: 64px;
+        padding: 0 8px;
+
+        .khylo-track-row__title-wrap {
+            min-width: 0;
+        }
+
+        .khylo-track-row__col--time {
+            white-space: nowrap;
+            font-size: 0.8125rem;
+        }
+    }
+
+    // Track actions: add to playlist and favourite
+    .khylo-track-row__col--actions {
+        gap: 4px;
+    }
+
+    .khylo-track-row__add-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 4px;
+        border: none;
+        background: none;
+        color: $muted;
+        cursor: pointer;
+
+        svg {
+            font-size: 1.125rem;
+        }
+
+        &:hover {
+            color: $white;
+        }
+    }
+
+    &__back-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin: 16px 0 0;
+        padding: 0 16px 0 12px;
+        height: 32px;
+        border: none;
+        border-radius: 500px;
+        background: rgba(0, 0, 0, 0.5);
+        color: $white;
+        font-size: 0.875rem;
+        font-weight: 500;
+        cursor: pointer;
+
+        svg {
+            font-size: 1rem;
+        }
+
+        &:hover {
+            background: rgba(0, 0, 0, 0.7);
+        }
+    }
+
+    // Artist page header
+    .khylo-artist-header {
+        position: relative;
+        display: flex;
+        align-items: flex-end;
+        width: auto;
+        min-height: 260px;
+        margin: 16px -32px 32px;
+        overflow: hidden;
+        background: linear-gradient(180deg, #2A2220 0%, $panel 100%);
+        box-sizing: border-box;
+
+        &__backdrop {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center 30%;
+            filter: brightness(0.6);
+        }
+
+        &__gradient {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(0deg, $panel 0%, rgba(18, 19, 20, 0.2) 70%, rgba(18, 19, 20, 0.1) 100%);
+        }
+
+        &__content {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: flex-end;
+            gap: 24px;
+            width: 100%;
+            box-sizing: border-box;
+            padding: 32px;
+        }
+
+        &__avatar-box {
+            width: 160px;
+            aspect-ratio: 1 / 1;
+            flex-shrink: 0;
+            border-radius: 50%;
+            overflow: hidden;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+        }
+
+        &__avatar {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        &__details {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            min-width: 0;
+        }
+
+        &__name {
+            margin: 0;
+            font-size: clamp(1.9rem, 3.2vw, 2.9rem);
+            font-weight: 900;
+            line-height: 1.05;
+            letter-spacing: -0.04em;
+            color: $white;
+            overflow-wrap: anywhere;
+        }
+
+        &__meta {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.875rem;
+            color: $subdued;
+
+            &-sep {
+                color: $muted;
+            }
+        }
+
+        &__actions {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 16px;
+            margin-top: 16px;
+        }
+    }
+
+    // Genre page header
+    .khylo-genre-header {
+        position: relative;
+        display: flex;
+        align-items: flex-end;
+        width: auto;
+        min-height: 220px;
+        margin: 16px -32px 32px;
+        overflow: hidden;
+        box-sizing: border-box;
+
+        &__gradient-bg {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        &__vignette {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(0deg, $panel 0%, rgba(18, 19, 20, 0.2) 70%, rgba(18, 19, 20, 0.05) 100%);
+        }
+
+        &__watermark-icon {
+            position: absolute;
+            right: 36px;
+            bottom: -30px;
+            font-size: 14rem !important;
+            color: rgba(0, 0, 0, 0.2);
+            transform: rotate(-12deg);
+            pointer-events: none;
+        }
+
+        &__content {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            width: 100%;
+            box-sizing: border-box;
+            padding: 32px;
+        }
+
+        &__kicker {
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: $white;
+        }
+
+        &__name {
+            margin: 0;
+            font-size: clamp(1.9rem, 3.2vw, 2.9rem);
+            font-weight: 900;
+            line-height: 1.05;
+            letter-spacing: -0.04em;
+            color: $white;
+        }
+
+        &__meta {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.875rem;
+            color: $subdued;
+
+            &-sep {
+                color: $muted;
+            }
+        }
+
+        &__actions {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 16px;
+            margin-top: 16px;
+        }
+    }
+
+    &__empty {
+        padding: 80px 0;
+        text-align: center;
+
+        h3 {
+            margin-bottom: 8px;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: $white;
+        }
+
+        p {
+            color: $muted;
+        }
+    }
+
+    &__empty-text {
+        color: $muted;
+    }
+
+    // Now Playing panel on the right
+    &-panel {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        width: $panel-width;
+        flex-shrink: 0;
+        box-sizing: border-box;
+        overflow-y: auto;
+        scrollbar-width: none;
+
+        @media (max-width: 1280px) {
+            display: none;
+        }
+
+        &::-webkit-scrollbar {
+            display: none;
+        }
+
+        &__now,
+        &__about {
+            padding: 16px;
+            border-radius: 8px;
+            background: $panel;
+        }
+
+        &__now {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        &__title {
+            margin: 0;
+            font-size: 1rem;
+            font-weight: 700;
+            color: $white;
+        }
+
+        &__cover {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            border-radius: 8px;
+            overflow: hidden;
+            background: #1E1F21;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+        }
+
+        &__cover-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        &__cover-fallback {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            color: $muted;
+
+            svg {
+                font-size: 3rem;
+            }
+        }
+
+        &__track {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            min-width: 0;
+        }
+
+        &__track-name {
+            overflow: hidden;
+            font-size: 1.25rem;
+            font-weight: 700;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            color: $white;
+        }
+
+        &__track-artist {
+            overflow: hidden;
+            font-size: 0.875rem;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            color: $muted;
+        }
+
+        // Transport in the panel mirrors the bottom bar
+        &__controls {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+        }
+
+        &__ctrl {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            padding: 0;
+            border: none;
+            background: none;
+            color: $white;
+            cursor: pointer;
+
+            svg {
+                font-size: 1.75rem;
+            }
+        }
+
+        &__ctrl--main {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: $white;
+            color: #090A0B;
+
+            svg {
+                font-size: 1.5rem;
+            }
+        }
+
+        // About the artist
+        &__about {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        &__about-photo {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            border-radius: 8px;
+            overflow: hidden;
+            background: #1E1F21;
+        }
+
+        &__about-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        &__about-fallback {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            font-size: 3rem;
+            font-weight: 700;
+            color: $muted;
+        }
+
+        &__about-label {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            font-size: 1rem;
+            font-weight: 700;
+            color: $white;
+            text-shadow: 0 1px 6px rgba(0, 0, 0, 0.6);
+        }
+
+        &__about-name {
+            font-size: 1rem;
+            font-weight: 700;
+            color: $white;
+        }
+
+        &__about-meta {
+            font-size: 0.875rem;
+            color: $muted;
+        }
+
+        &__heading {
+            margin: 0 0 8px;
+            font-size: 1rem;
+            font-weight: 700;
+            color: $white;
+        }
+    }
+
+    // Left sidebar: a Home/Explore card and a Your Library card, as in Spotify
+    &-side {
+        position: fixed;
+        top: $gap;
+        bottom: var(--khylo-player-space);
+        left: $gap;
+        z-index: 1100;
+        display: flex;
+        flex-direction: column;
+        gap: $gap;
+        width: $side-width;
+        box-sizing: border-box;
+
+        @media (max-width: 899px) {
+            display: none;
+        }
+
+        &__card {
+            border: none;
+            border-radius: 8px;
+            background: $panel;
+        }
+
+        &__nav {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            padding: 12px 8px;
+        }
+
+        &__brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 16px 12px;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: $white;
+        }
+
+        &__brand-icon {
+            color: $accent;
+        }
+
+        &__item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            width: 100%;
+            height: 40px;
+            padding: 0 16px;
+            border: none;
+            border-radius: 4px;
+            background: none;
+            color: $subdued;
+            font-size: 0.9375rem;
+            font-weight: 700;
+            text-align: left;
+            cursor: pointer;
+            transition: color 120ms ease;
+
+            svg {
+                font-size: 1.5rem;
+            }
+
+            &:hover {
+                color: $white;
+            }
+
+            &--active {
+                color: $white;
+            }
+        }
+
+        &__card--library {
+            display: flex;
+            flex: 1;
+            flex-direction: column;
+            min-height: 0;
+            padding: 8px;
+        }
+
+        &__create {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            margin-left: auto;
+            padding: 0;
+            border: none;
+            border-radius: 50%;
+            background: none;
+            color: $subdued;
+            cursor: pointer;
+
+            svg {
+                font-size: 1.25rem;
+            }
+
+            &:hover {
+                background: $pill;
+                color: $white;
+            }
+        }
+
+        &__library-head {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 8px 12px;
+            font-size: 1rem;
+            font-weight: 700;
+            color: $subdued;
+
+            svg {
+                font-size: 1.5rem;
+            }
+        }
+
+        &__pills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            padding: 0 8px 12px;
+        }
+
+        &__pill {
+            height: 32px;
+            padding: 0 12px;
+            border: none;
+            border-radius: 500px;
+            background: $pill;
+            color: $white;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+
+            &:hover {
+                background: #2A2B2D;
+            }
+
+            &--active {
+                background: #2A2B2D;
+            }
+        }
+
+        &__playlists {
+            display: flex;
+            flex: 1;
+            flex-direction: column;
+            gap: 0;
+            min-height: 0;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+        }
+
+        &__playlist {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+            padding: 8px;
+            border: none;
+            border-radius: 4px;
+            background: none;
+            text-align: left;
+            cursor: pointer;
+
+            &:hover {
+                background: $card;
+            }
+        }
+
+        &__playlist-cover {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 48px;
+            height: 48px;
+            flex-shrink: 0;
+            border-radius: 4px;
+            object-fit: cover;
+
+            &--fallback {
+                background: #1E1F21;
+                color: $muted;
+            }
+        }
+
+        &__playlist-text {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+
+        &__playlist-name {
+            overflow: hidden;
+            font-size: 1rem;
+            font-weight: 400;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            color: $white;
+        }
+
+        &__playlist-sub {
+            font-size: 0.875rem;
+            color: $muted;
+        }
+
+        &__empty {
+            padding: 12px 8px;
+            font-size: 0.875rem;
+            color: $muted;
+        }
+
+        &__back {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            height: 48px;
+            padding: 0 16px;
+            color: $subdued;
+            font-size: 0.875rem;
+            font-weight: 700;
+            cursor: pointer;
+
+            svg {
+                font-size: 1rem;
+            }
+
+            &:hover {
+                color: $white;
+            }
+        }
+    }
+
+    // Narrow screens: no fixed panels, and the table gives up columns
+    @media (max-width: 1180px) {
+        .khylo-track-table {
+            --track-cols: 16px minmax(0, 4fr) minmax(0, 3fr) 72px 72px;
+        }
+
+        .khylo-track-table--with-artist {
+            --track-cols: 16px minmax(0, 4fr) minmax(0, 3fr) 72px 72px;
+        }
+
+        .khylo-track-table__col--album,
+        .khylo-track-table__th--album,
+        .khylo-track-row__col--album {
+            display: none;
+        }
+    }
+
+    @media (max-width: 980px) {
+        .khylo-track-table--with-artist {
+            --track-cols: 16px minmax(0, 4fr) 72px 72px;
+        }
+
+        .khylo-track-table__col--artist,
+        .khylo-track-row__col--artist {
+            display: none;
+        }
+    }
+
+    @media (max-width: 899px) {
+        padding: 0 0 120px;
+
+        &__content {
+            overflow: visible;
+            background: transparent;
+            border-radius: 0;
+        }
+
+        &__main,
+        &__artist-hub,
+        &__genre-hub {
+            padding: 0 12px 16px;
+        }
+
+        &-nav {
+            top: 0;
+            margin: 0 -12px;
+            padding: 12px;
+        }
+
+        &-search__input,
+        &-search__input:focus {
+            width: 100%;
+        }
+
+        &-search {
+            flex: 1 1 100%;
+        }
+
+        &-hero {
+            margin: 0 -12px 24px;
+            padding: 32px 12px 16px;
+
+            &__picks {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 8px;
+            }
+
+            &__greeting {
+                font-size: 1.5rem;
+            }
+        }
+
+        .khylo-album-rail,
+        .khylo-artist-rail {
+            grid-auto-columns: 150px;
+        }
+
+        .khylo-album-grid,
+        .khylo-artist-grid {
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        }
+
+        .khylo-artist-header {
+            margin: 0 -12px 24px;
+        }
+
+        .khylo-artist-header__content {
+            flex-direction: column;
+            align-items: flex-start;
+            padding: 24px;
+        }
+
+        .khylo-artist-header__avatar-box {
+            width: 140px;
+        }
+
+        .khylo-genre-header {
+            margin: 0 -12px 24px;
+        }
+
+        .khylo-genre-header__content {
+            padding: 24px;
+        }
+
+        .khylo-track-table,
+        .khylo-track-table--with-artist {
+            --track-cols: 16px minmax(0, 1fr) 40px;
+        }
+
+        .khylo-track-row,
+        .khylo-track-table__header,
+        .khylo-track-table__head {
+            column-gap: 10px;
+            padding-left: 8px;
+            padding-right: 8px;
+        }
+    }
+
+    @media (hover: none) {
+        .khylo-album-card__play-btn,
+        .khylo-artist-card__play-btn {
+            opacity: 1;
+            transform: none;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        &,
+        & * {
+            transition: none !important;
+            scroll-behavior: auto !important;
+        }
+    }
+}

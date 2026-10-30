@@ -1,0 +1,75 @@
+.khylo-channel-osd {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    margin-left: 16px;
+    color: #f4f1ec;
+    font-size: 0.85rem;
+    white-space: nowrap;
+
+    &__live {
+        padding: 2px 7px;
+        border-radius: 4px;
+        background: #d97732;
+        color: #fff;
+        font-size: 0.66rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+    }
+
+    &__channel {
+        font-weight: 600;
+    }
+
+    &__next {
+        color: #b4aea7;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 320px;
+    }
+
+    &__surf {
+        display: inline-flex;
+        gap: 2px;
+
+        button {
+            width: 32px;
+            height: 32px;
+            border: none;
+            border-radius: 50%;
+            background: transparent;
+            color: #f4f1ec;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+
+            &:hover {
+                background: rgba(255, 255, 255, 0.12);
+            }
+
+            &:focus-visible {
+                outline: 2px solid #d97732;
+                outline-offset: 1px;
+            }
+        }
+    }
+}
+
+@media (max-width: 700px) {
+    .khylo-channel-osd__next {
+        display: none;
+    }
+}
+
+// While watching a live channel the viewer can only pause and rewind: hide the controls that skip ahead
+body.khylo-live-channel-active .videoOsdBottom {
+    .btnFastForward,
+    .btnNextTrack,
+    .btnPreviousTrack,
+    .btnNextChapter,
+    .btnPreviousChapter {
+        display: none !important;
+    }
+}

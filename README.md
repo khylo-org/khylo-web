@@ -10,6 +10,9 @@
 
 ---
 
+> [!IMPORTANT]
+> **Looking to install Khylo?** This page is the source code. The ready-to-run downloads (Windows installer, Mac, Linux, Proxmox and Docker) and the install guides are on the **[Khylo download page](https://github.com/khylo-org/khylo)**, or go straight to the **[latest release](https://github.com/khylo-org/khylo/releases/latest)**.
+
 ## What's inside
 
 - **A cinematic web app.** Edge-to-edge artwork, title logos, a floating top bar, and clean rows for Continue Watching, Up Next and everything recently added.

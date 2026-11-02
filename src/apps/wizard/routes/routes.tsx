@@ -2,6 +2,7 @@ import React from 'react';
 import { Navigate, RouteObject } from 'react-router-dom';
 
 import AppLayout from 'apps/legacy/AppLayout';
+import '../wizard.scss';
 import { AppType } from 'constants/appType';
 import ConnectionRequired from 'components/ConnectionRequired';
 import ErrorBoundary from 'components/router/ErrorBoundary';

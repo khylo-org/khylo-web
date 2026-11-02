@@ -155,18 +155,7 @@ class ServerConnections extends ConnectionManager {
     }
 }
 
-// Saved sign-ins used to live under another name; move them once so nobody is signed out
 const CREDENTIALS_KEY = 'khylo_credentials';
-try {
-    const legacyKey = 'khylo_credentials';
-    const legacy = localStorage.getItem(legacyKey);
-    if (legacy && !localStorage.getItem(CREDENTIALS_KEY)) {
-        localStorage.setItem(CREDENTIALS_KEY, legacy);
-    }
-    if (legacy) localStorage.removeItem(legacyKey);
-} catch (err) {
-    // Storage isn't available: the sign-in just won't be remembered
-}
 
 const credentialProvider = new Credentials(CREDENTIALS_KEY);
 

@@ -1,0 +1,189 @@
+// First-time setup: one calm column, flat surfaces, one accent colour. No glow, gradients or shadows.
+$wizard-accent: #d97732;
+$wizard-text: #f4f1ec;
+$wizard-muted: rgba(244, 241, 236, 0.66);
+$wizard-line: rgba(255, 255, 255, 0.1);
+$wizard-field: #16171a;
+
+.page.wizardPage {
+    padding-top: 3.5rem !important;
+}
+
+.wizardPage .wizardContent {
+    max-width: 38rem;
+    margin: 0 auto;
+    padding: 0 0 3rem;
+    background: none;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    color: $wizard-text;
+
+    h1 {
+        margin: 0 0 0.6rem;
+        font-size: 1.8rem;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+        color: $wizard-text;
+    }
+
+    h2 {
+        margin: 1.75rem 0 0.6rem;
+        font-size: 1rem;
+        font-weight: 600;
+        color: $wizard-text;
+    }
+
+    p,
+    li {
+        line-height: 1.65;
+        color: $wizard-muted;
+    }
+
+    b,
+    strong {
+        font-weight: 600;
+        color: $wizard-text;
+    }
+
+    a:not(.raised) {
+        color: $wizard-accent;
+    }
+
+    .inputContainer,
+    .selectContainer {
+        margin: 0 0 1.4rem;
+    }
+
+    .inputLabel,
+    .selectLabel,
+    label {
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: $wizard-muted;
+    }
+
+    .khylo-input,
+    .khylo-select {
+        box-sizing: border-box;
+        width: 100%;
+        padding: 0.75rem 0.9rem;
+        font-size: 1rem;
+        color: $wizard-text;
+        background: $wizard-field;
+        border: 1px solid $wizard-line;
+        border-radius: 8px;
+        transition: border-color 0.15s ease;
+
+        &:focus {
+            border-color: $wizard-accent;
+            outline: none;
+        }
+    }
+
+    .fieldDescription {
+        margin-top: 0.4rem;
+        font-size: 0.82rem;
+        line-height: 1.5;
+        color: $wizard-muted;
+    }
+
+    .wizardNavigation {
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.75rem;
+        margin-top: 2.25rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid $wizard-line;
+        text-align: right;
+    }
+
+    .raised {
+        min-height: 2.75rem;
+        margin: 0;
+        padding: 0 1.4rem;
+        font-size: 0.95rem;
+        font-weight: 600;
+        text-transform: none;
+        letter-spacing: 0;
+        border: 0;
+        border-radius: 8px;
+        box-shadow: none;
+    }
+
+    .button-submit {
+        color: #fff;
+        background: $wizard-accent;
+
+        &:hover {
+            background: lighten($wizard-accent, 4%);
+        }
+    }
+
+    .button-cancel {
+        color: $wizard-muted;
+        background: transparent;
+        border: 1px solid $wizard-line;
+
+        &:hover {
+            color: $wizard-text;
+            border-color: rgba(255, 255, 255, 0.24);
+        }
+    }
+}
+
+// The welcome page's header: logo, title and a quiet link to the guide
+.wizardHeader {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid $wizard-line;
+}
+
+.wizardHeaderText {
+    flex: 1;
+    min-width: 0;
+
+    h1 {
+        margin: 0;
+    }
+}
+
+.wizardEyebrow {
+    display: block;
+    margin-bottom: 0.15rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: $wizard-muted;
+}
+
+.wizardPage .wizardContent a.wizardGuideLink {
+    flex-shrink: 0;
+    min-height: 0;
+    padding: 0.4rem 0.2rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: $wizard-muted;
+    background: none;
+    border-radius: 0;
+
+    &:hover {
+        color: $wizard-text;
+        text-decoration: underline;
+    }
+}
+
+.wizardKhyloIcon {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background-image: url('../../assets/img/khylo-icon.png');
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: contain;
+}

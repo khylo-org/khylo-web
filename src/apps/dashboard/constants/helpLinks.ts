@@ -1,49 +1,52 @@
+// Khylo's guides, on its GitHub page. Pages without a guide of their own go to the contents page.
+const DOCS = 'https://github.com/khylo-org/khylo/blob/main/Install';
+
 export const HelpLinks = [
     {
         paths: ['/dashboard/devices'],
-        url: 'https://github.com/khylo/khylo#devices'
+        url: `${DOCS}/first-setup.md`
     }, {
         paths: ['/dashboard/libraries'],
-        url: 'https://github.com/khylo/khylo#libraries'
+        url: `${DOCS}/first-setup.md`
     }, {
         paths: [
             '/dashboard/livetv',
             '/dashboard/livetv/tuner',
             '/dashboard/recordings'
         ],
-        url: 'https://github.com/khylo/khylo#live-tv'
+        url: `${DOCS}/README.md`
     }, {
         paths: ['/dashboard/livetv/guide'],
-        url: 'https://github.com/khylo/khylo#guide-data'
+        url: `${DOCS}/README.md`
     }, {
         paths: ['/dashboard/networking'],
-        url: 'https://github.com/khylo/khylo#networking'
+        url: `${DOCS}/remote-access.md`
     }, {
         paths: ['/dashboard/playback/transcoding'],
-        url: 'https://github.com/khylo/khylo#transcoding'
+        url: `${DOCS}/hardware-transcoding.md`
     }, {
         paths: ['/dashboard/plugins'],
-        url: 'https://github.com/khylo/khylo#plugins'
+        url: `${DOCS}/README.md`
     }, {
         paths: ['/dashboard/plugins/repositories'],
-        url: 'https://github.com/khylo/khylo#repositories'
+        url: `${DOCS}/README.md`
     }, {
         paths: [
             '/dashboard/branding',
             '/dashboard/settings'
         ],
-        url: 'https://github.com/khylo/khylo#settings'
+        url: `${DOCS}/README.md`
     }, {
         paths: ['/dashboard/tasks'],
-        url: 'https://github.com/khylo/khylo#tasks'
+        url: `${DOCS}/README.md`
     }, {
         paths: ['/dashboard/users'],
-        url: 'https://github.com/khylo/khylo#users'
+        url: `${DOCS}/README.md`
     }, {
         paths: ['/dashboard/users/:userId/:tab'],
-        url: 'https://github.com/khylo/khylo#user-management'
+        url: `${DOCS}/README.md`
     }, {
         paths: ['/dashboard/backups'],
-        url: 'https://github.com/khylo/khylo#backup-restore'
+        url: `${DOCS}/backup-restore-update.md`
     }
 ];

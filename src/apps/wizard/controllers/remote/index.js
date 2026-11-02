@@ -39,11 +39,11 @@ export default function (view) {
     view.addEventListener('viewshow', function () {
         document.querySelector('.skinHeader').classList.add('noHomeButtonHeader');
 
-        // The address apps on the home network can use
+        // The address phones and TVs on the home network can use (never this computer's own 127.0.0.1)
         const apiClient = ServerConnections.currentApiClient();
         apiClient.getJSON(apiClient.getUrl('System/Info/Public')).then(function (info) {
-            if (!info?.LocalAddress) return;
-            view.querySelector('.khyloLocalAddress').textContent = info.LocalAddress;
+            if (!info?.HomeAddress) return;
+            view.querySelector('.khyloLocalAddress').textContent = info.HomeAddress;
             view.querySelector('.khyloHomeAddress').hidden = false;
         }).catch(function () { /* the tip is optional */ });
     });

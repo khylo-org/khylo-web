@@ -46,7 +46,7 @@ const ConnectionErrorPage: FC<ConnectionErrorPageProps> = ({
                 setTitle(globalize.translate('HeaderUpdateRequired'));
                 setHtmlMessage(globalize.translate(
                     'ServerUpdateNeeded',
-                    '<a href="https://github.com/khylo/khylo/releases">github.com/khylo/khylo/releases</a>'
+                    '<a href="https://github.com/khylo-org/khylo/releases">github.com/khylo-org/khylo/releases</a>'
                 ));
                 setMessage(undefined);
                 return;

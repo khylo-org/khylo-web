@@ -38,6 +38,8 @@ import { KHYLO_COLORS } from '../ui/tokens';
 import {
     KhyloNetworkShareDialog,
     fetchNetworkShares,
+    fetchMappedDrives,
+    type MappedDrive,
     removeNetworkShare,
     type NetworkShare,
     type ServerAccess
@@ -58,6 +60,12 @@ interface KhyloServerFileBrowserModalProps {
     includeFiles?: boolean;
     filterExtensions?: string[];
 }
+
+/** What the tooltip says about a drive mapped on the server's computer. */
+const mappedHint = (m: MappedDrive) => {
+    if (m.Reachable) return `${m.Address}, mapped as ${m.Letter} on this computer`;
+    return `${m.Address} is mapped as ${m.Letter} on this computer. Click to connect it with your login for the share.`;
+};
 
 export const KhyloServerFileBrowserModal: FC<KhyloServerFileBrowserModalProps> = ({
     open,
@@ -85,6 +93,9 @@ export const KhyloServerFileBrowserModal: FC<KhyloServerFileBrowserModalProps> =
     const [whyNotShares, setWhyNotShares] = useState<string | null>(null);
     const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
     const [shareToRemove, setShareToRemove] = useState<NetworkShare | null>(null);
+    // Drives mapped on the server's computer (Windows). The server can't use their letters, but it can connect the address
+    const [mappedDrives, setMappedDrives] = useState<MappedDrive[]>([]);
+    const [shareDraft, setShareDraft] = useState<{ address: string; username: string } | null>(null);
 
     const access = useMemo<ServerAccess>(() => {
         const legacy = ServerConnections.currentApiClient();
@@ -102,6 +113,14 @@ export const KhyloServerFileBrowserModal: FC<KhyloServerFileBrowserModalProps> =
             setWhyNotShares(result.WhyNot || null);
         } catch (err) {
             console.warn('[FileBrowser] network shares unavailable:', err);
+        }
+    }, [access]);
+
+    const fetchMapped = useCallback(async () => {
+        try {
+            setMappedDrives(await fetchMappedDrives(access));
+        } catch (err) {
+            console.warn('[FileBrowser] mapped drives unavailable:', err);
         }
     }, [access]);
 
@@ -215,8 +234,11 @@ export const KhyloServerFileBrowserModal: FC<KhyloServerFileBrowserModalProps> =
     }, [open, initialPath, fetchDrives, loadDirectory]);
 
     useEffect(() => {
-        if (open) void fetchShares();
-    }, [open, fetchShares]);
+        if (open) {
+            void fetchShares();
+            void fetchMapped();
+        }
+    }, [open, fetchShares, fetchMapped]);
 
     const onShareConnected = useCallback((share: NetworkShare) => {
         setIsShareDialogOpen(false);
@@ -424,11 +446,45 @@ export const KhyloServerFileBrowserModal: FC<KhyloServerFileBrowserModalProps> =
                                 </Tooltip>
                             );
                         })}
+                        {mappedDrives
+                            .filter(m => !shares.some(sh => sh.Address.toLowerCase() === m.Address.toLowerCase()))
+                            .map(m => (
+                                <Tooltip
+                                    key={m.Address}
+                                    title={mappedHint(m)}
+                                >
+                                    <Chip
+                                        icon={<LanIcon sx={{ fontSize: 16 }} />}
+                                        label={`${m.Letter}  ${m.Address}`}
+                                        clickable
+                                        onClick={() => {
+                                            if (m.Reachable) {
+                                                handleSelectDrive(m.Address);
+                                            } else {
+                                                setShareDraft({ address: m.Address, username: m.UserName ?? '' });
+                                                setIsShareDialogOpen(true);
+                                            }
+                                        }}
+                                        variant='outlined'
+                                        sx={{
+                                            fontWeight: 600,
+                                            fontSize: '0.78rem',
+                                            borderRadius: '6px',
+                                            color: KHYLO_COLORS.textSecondary,
+                                            borderColor: KHYLO_COLORS.borderDefault,
+                                            '&:hover': { color: KHYLO_COLORS.accent, borderColor: KHYLO_COLORS.accent }
+                                        }}
+                                    />
+                                </Tooltip>
+                            ))}
                         <Chip
                             icon={<AddIcon sx={{ fontSize: 16 }} />}
                             label='Network share'
                             clickable
-                            onClick={() => setIsShareDialogOpen(true)}
+                            onClick={() => {
+                                setShareDraft(null);
+                                setIsShareDialogOpen(true);
+                            }}
                             variant='outlined'
                             sx={{
                                 fontWeight: 600,
@@ -448,6 +504,8 @@ export const KhyloServerFileBrowserModal: FC<KhyloServerFileBrowserModalProps> =
                     access={access}
                     canConnect={canConnectShares}
                     whyNot={whyNotShares}
+                    initialAddress={shareDraft?.address}
+                    initialUsername={shareDraft?.username}
                     onClose={() => setIsShareDialogOpen(false)}
                     onConnected={onShareConnected}
                 />

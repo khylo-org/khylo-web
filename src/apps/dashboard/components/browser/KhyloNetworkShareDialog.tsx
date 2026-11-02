@@ -29,6 +29,21 @@ export interface NetworkShare {
     Connected: boolean;
 }
 
+/** A network drive someone mapped on the server's computer (Windows), for example X: pointing to \\nas\movies. */
+export interface MappedDrive {
+    Letter: string;
+    Address: string;
+    UserName?: string | null;
+    Account?: string | null;
+    Reachable: boolean;
+}
+
+export const fetchMappedDrives = async ({ base, token }: ServerAccess) => (
+    (await axios.get<MappedDrive[]>(`${base}/Khylo/NetworkShares/Mapped`, {
+        headers: { Authorization: `MediaBrowser Token="${token}"` }
+    })).data
+);
+
 export interface NetworkSharesResult {
     CanConnect: boolean;
     WhyNot?: string | null;
@@ -58,6 +73,9 @@ interface Props {
     access: ServerAccess;
     canConnect: boolean;
     whyNot?: string | null;
+    /** The address and login to start with, for a drive already mapped on the computer. */
+    initialAddress?: string;
+    initialUsername?: string;
     onClose: () => void;
     onConnected: (share: NetworkShare) => void;
 }
@@ -66,7 +84,7 @@ const SMB_HELP = 'The computer’s name or IP address, then the share: \\\\192.1
 const NFS_HELP = 'The computer’s name or IP address, a colon, then the folder: 192.168.1.10:/volume1/Movies';
 
 /** Connects a Windows/SMB or NFS share so its folders can be used in libraries. */
-export const KhyloNetworkShareDialog: FC<Props> = ({ open, access, canConnect, whyNot, onClose, onConnected }) => {
+export const KhyloNetworkShareDialog: FC<Props> = ({ open, access, canConnect, whyNot, initialAddress, initialUsername, onClose, onConnected }) => {
     const [kind, setKind] = useState<'smb' | 'nfs'>('smb');
     const [address, setAddress] = useState('');
     const [username, setUsername] = useState('');
@@ -77,14 +95,14 @@ export const KhyloNetworkShareDialog: FC<Props> = ({ open, access, canConnect, w
 
     useEffect(() => {
         if (open) {
-            setAddress('');
-            setUsername('');
+            setAddress(initialAddress ?? '');
+            setUsername(initialUsername ?? '');
             setPassword('');
             setReadOnly(true);
             setError(null);
             setBusy(false);
         }
-    }, [open]);
+    }, [open, initialAddress, initialUsername]);
 
     const onConnect = useCallback(async (e?: React.FormEvent) => {
         e?.preventDefault();

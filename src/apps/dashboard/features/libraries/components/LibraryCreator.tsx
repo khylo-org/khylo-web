@@ -1,4 +1,5 @@
 import React, { useState, useCallback, FC } from 'react';
+import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import TextField from '@mui/material/TextField';
@@ -82,6 +83,7 @@ const LibraryCreator: FC<LibraryCreatorProps> = ({ onCreated, onCancel }) => {
     const [extractChapterImages, setExtractChapterImages] = useState(true);
     const [generateTrickplay, setGenerateTrickplay] = useState(false);
     const [isCreating, setIsCreating] = useState(false);
+    const [createError, setCreateError] = useState<string | null>(null);
 
     const selectedOption = DOMAIN_OPTIONS.find(d => d.id === selectedDomain);
 
@@ -96,6 +98,7 @@ const LibraryCreator: FC<LibraryCreatorProps> = ({ onCreated, onCancel }) => {
     const handleCreate = useCallback(async () => {
         if (!selectedDomain || !libraryName.trim() || !api) return;
         setIsCreating(true);
+        setCreateError(null);
         try {
             const validPaths = paths.filter(p => p.trim());
             await getLibraryStructureApi(api).addVirtualFolder({
@@ -116,6 +119,8 @@ const LibraryCreator: FC<LibraryCreatorProps> = ({ onCreated, onCancel }) => {
             onCreated();
         } catch (e) {
             console.error('Failed to create library', e);
+            const data = (e as { response?: { data?: unknown } }).response?.data;
+            setCreateError(`Couldn't create the library. ${typeof data === 'string' && data.length < 300 ? data : 'Check the folder and try again.'}`);
         } finally {
             setIsCreating(false);
         }
@@ -387,6 +392,7 @@ const LibraryCreator: FC<LibraryCreatorProps> = ({ onCreated, onCancel }) => {
 
     return (
         <>
+            {createError && <Alert severity='error' sx={{ mb: 2 }}>{createError}</Alert>}
             <Paper
                 variant='outlined'
                 sx={{

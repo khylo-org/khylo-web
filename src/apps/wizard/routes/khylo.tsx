@@ -588,7 +588,7 @@ export const StepButtons: FC<{ onNext: () => void; nextLabel: string; disabled?:
 
 /* ── Sign-in, when setup was reloaded and lost the admin's details ─────── */
 
-const SignIn: FC<{ onSignedIn: () => void }> = ({ onSignedIn }) => {
+export const SignIn: FC<{ onSignedIn: () => void }> = ({ onSignedIn }) => {
     const [ username, setUsername ] = useState('');
     const [ password, setPassword ] = useState('');
     const [ error, setError ] = useState<string | null>(null);

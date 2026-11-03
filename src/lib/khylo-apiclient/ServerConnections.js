@@ -88,11 +88,26 @@ class ServerConnections extends ConnectionManager {
     /**
      * @returns {Promise<import('khylo-apiclient').ConnectResponse>} The result of the connection attempt.
      */
-    connect(options) {
-        return super.connect({
+    async connect(options) {
+        const connectOptions = {
             enableAutoLogin: appSettings.enableAutoLogin(),
             ...options
-        });
+        };
+        const result = await super.connect(connectOptions);
+
+        // A browser that has never been here has no saved server, so the usual check ends at "pick a server".
+        // But this page was served by a Khylo server, and that server is the one to use: connect to it, so a new
+        // install goes straight to first-time setup and a new browser straight to sign in.
+        if (result?.State === 'ServerSelection' && !result.Servers?.length && this.localApiClient) {
+            try {
+                const local = await this.connectToAddress(this.localApiClient.serverAddress(), connectOptions);
+                if (local && local.State !== 'Unavailable') return local;
+            } catch (err) {
+                console.debug('[ServerConnections] could not reach the server this page came from', err);
+            }
+        }
+
+        return result;
     }
 
     setLocalApiClient(apiClient) {

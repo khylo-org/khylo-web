@@ -10,6 +10,7 @@ import Switch from '@mui/material/Switch';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import FolderOpenIcon from '@mui/icons-material/FolderOpen';
+import UploadFileIcon from '@mui/icons-material/UploadFile';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import RadarIcon from '@mui/icons-material/Radar';
@@ -17,6 +18,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import type { LiveTvOptions } from '@khylo/sdk/lib/generated-client/models/live-tv-options';
 import type { TunerHostInfo } from '@khylo/sdk/lib/generated-client/models/tuner-host-info';
+import type { Api } from '@khylo/sdk';
 import { getLiveTvApi } from '@khylo/sdk/lib/utils/api/live-tv-api';
 import { isAxiosError } from 'axios';
 
@@ -25,6 +27,7 @@ import { useApi } from 'hooks/useApi';
 import { QUERY_KEY, useNamedConfiguration } from 'hooks/useNamedConfiguration';
 import { queryClient } from 'utils/query/queryClient';
 import { ChannelPicker } from 'apps/dashboard/features/livetv/components/ChannelPicker';
+import { uploadGuideFile } from 'apps/dashboard/features/livetv/utils/guideUpload';
 import {
     type PlaylistInfo,
     type Selection,
@@ -183,6 +186,110 @@ const PlaylistTestControl: FC<{ test: PlaylistTest; onTest: () => void }> = ({ t
     </Box>
 );
 
+/** Why a guide upload failed, in the server's words when it gave them. */
+function uploadErrorText(err: unknown): string {
+    const reason = isAxiosError(err) && typeof err.response?.data === 'string' ? err.response.data : null;
+    return reason || 'Couldn\'t upload that guide file.';
+}
+
+/** Uploading a guide file from this computer. */
+function useGuideUpload(api: Api | undefined, onSaved: (path: string) => void, onError: (message: string) => void) {
+    const [ uploading, setUploading ] = useState(false);
+
+    const upload = async (file: File) => {
+        if (!api) return;
+        setUploading(true);
+        try {
+            onSaved(await uploadGuideFile(api.basePath, api.authorizationHeader, file));
+        } catch (err) {
+            onError(uploadErrorText(err));
+        } finally {
+            setUploading(false);
+        }
+    };
+
+    return { uploading, upload };
+}
+
+/** Adds the program guide with the tuner, unless that guide is already set up. Resolves to false when it can't be read. */
+async function addGuide(api: Api, providers: LiveTvOptions['ListingProviders'], guidePath: string, isPlaylist: boolean): Promise<boolean> {
+    const guide = guidePath.trim();
+    if (!isPlaylist || !guide || providers?.some(p => p.Type?.toLowerCase() === 'xmltv' && p.Path === guide)) return true;
+
+    try {
+        await getLiveTvApi(api).addListingProvider({
+            validateListings: true,
+            listingsProviderInfo: { Type: 'xmltv', Path: guide, EnableAllTuners: true }
+        });
+        return true;
+    } catch {
+        return false;
+    }
+}
+
+interface GuideSectionProps {
+    /** Guides go with IPTV playlists; an antenna tuner doesn't have one. */
+    visible: boolean;
+    value: string;
+    onChange: (value: string) => void;
+    onBrowse: () => void;
+    uploading: boolean;
+    onUpload: (file: File) => void;
+}
+
+/** The optional program guide: its link, a file on the server, or a file from this computer. */
+const GuideSection: FC<GuideSectionProps> = ({ visible, value, onChange, onBrowse, uploading, onUpload }) => (visible ? (
+    <KhyloSettingSection title='Program guide'>
+        <KhyloSettingRow
+            title='Guide address or file'
+            description='Optional. The TV guide (XMLTV) from your provider gives channels their schedules. Paste its link, upload the file, or choose one already on the server. You can add or change guides later on the Live TV page.'
+            control={
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, ...fieldSx }}>
+                    <TextField
+                        size='small'
+                        value={value}
+                        onChange={e => onChange(e.target.value)}
+                        placeholder='https://… or a file on this server'
+                        fullWidth
+                        slotProps={{
+                            input: {
+                                endAdornment: (
+                                    <InputAdornment position='end'>
+                                        <IconButton size='small' onClick={onBrowse} aria-label='Choose a guide file on the server'>
+                                            <FolderOpenIcon fontSize='small' />
+                                        </IconButton>
+                                    </InputAdornment>
+                                )
+                            }
+                        }}
+                    />
+                    <Button
+                        component='label'
+                        size='small'
+                        disabled={uploading}
+                        startIcon={uploading ? <CircularProgress size={14} /> : <UploadFileIcon />}
+                        sx={{ alignSelf: 'flex-start', textTransform: 'none', color: KHYLO_COLORS.textSecondary }}
+                    >
+                        {uploading ? 'Uploading…' : 'Upload a guide file from this computer'}
+                        <input
+                            hidden
+                            type='file'
+                            accept='.xml,.gz,.xmltv'
+                            onChange={e => {
+                                const file = e.target.files?.[0];
+                                e.target.value = '';
+                                if (file) onUpload(file);
+                            }}
+                        />
+                    </Button>
+                </Box>
+            }
+        />
+    </KhyloSettingSection>
+) : null);
+
+// The tuner form is one page: its source, channels, guide and save steps stay together
+// eslint-disable-next-line sonarjs/cognitive-complexity
 export const Component: FC = () => {
     const { api } = useApi();
     const navigate = useNavigate();
@@ -205,6 +312,10 @@ export const Component: FC = () => {
     const [ discovered, setDiscovered ] = useState<TunerHostInfo[] | null>(null);
     const [ test, setTest ] = useState<PlaylistTest>({ status: 'idle' });
     const [ selection, setSelection ] = useState<Selection>(EMPTY_SELECTION);
+    // An optional program guide, added with the tuner (the guide itself is a source of its own on the Live TV page)
+    const [ guidePath, setGuidePath ] = useState('');
+    const [ isBrowsingGuide, setIsBrowsingGuide ] = useState(false);
+    const { uploading: isUploadingGuide, upload: uploadGuide } = useGuideUpload(api, setGuidePath, setError);
 
     useEffect(() => {
         if (existing) {
@@ -281,6 +392,13 @@ export const Component: FC = () => {
         setIsSaving(true);
         setError(null);
         try {
+            // The guide first: if it can't be read, nothing else has been added yet
+            if (!(await addGuide(api, config?.ListingProviders, guidePath, isM3u))) {
+                setError('Couldn\'t read that program guide. Check the address or file, or clear it to add the tuner without a guide.');
+                setIsSaving(false);
+                return;
+            }
+
             const info = toTunerHostInfo(form, existing, tunerId);
             const body = isNewPlaylist && testedPlaylist ? { ...info, ...toSelectionBody(testedPlaylist, selection) } : info;
             await getLiveTvApi(api).addTunerHost({ tunerHostInfo: body });
@@ -426,6 +544,15 @@ export const Component: FC = () => {
                     </Box>
                 )}
 
+                <GuideSection
+                    visible={isM3u}
+                    value={guidePath}
+                    onChange={setGuidePath}
+                    onBrowse={() => setIsBrowsingGuide(true)}
+                    uploading={isUploadingGuide}
+                    onUpload={file => { uploadGuide(file).catch(() => undefined); }}
+                />
+
                 <KhyloSettingSection title='Streaming'>
                     {isM3u && (
                         <KhyloSettingRow
@@ -513,6 +640,19 @@ export const Component: FC = () => {
                     title='Choose a playlist file'
                     includeFiles
                     filterExtensions={[ '.m3u', '.m3u8' ]}
+                />
+
+                <KhyloServerFileBrowserModal
+                    open={isBrowsingGuide}
+                    initialPath={guidePath && !guidePath.startsWith('http') ? guidePath : undefined}
+                    onClose={() => setIsBrowsingGuide(false)}
+                    onSelect={path => {
+                        setGuidePath(path);
+                        setIsBrowsingGuide(false);
+                    }}
+                    title='Choose a guide file'
+                    includeFiles
+                    filterExtensions={[ '.xml', '.gz', '.xmltv' ]}
                 />
             </KhyloPage>
         </Page>

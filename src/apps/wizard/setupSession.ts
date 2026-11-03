@@ -60,3 +60,20 @@ export async function setupRequest<T = unknown>(method: string, path: string, bo
     const text = await response.text();
     return (text ? JSON.parse(text) : null) as T;
 }
+
+/** Uploads a file as the admin (a program guide from this computer); resolves to the parsed JSON answer. */
+export async function setupUpload<T = unknown>(path: string, file: File): Promise<T> {
+    const accessToken = await signIn();
+    const body = new FormData();
+    body.append('file', file);
+    const response = await fetch(`${serverBase()}${path}`, {
+        method: 'POST',
+        headers: { Authorization: `${CLIENT}, Token="${accessToken}"` },
+        body
+    });
+    if (!response.ok) {
+        const text = await response.text().catch(() => '');
+        throw new Error(text && text.length < 300 ? text.replace(/^"|"$/g, '') : `The server answered ${response.status}.`);
+    }
+    return await response.json() as T;
+}

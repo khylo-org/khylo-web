@@ -1,8 +1,7 @@
-import React, { FC, useCallback, useEffect, useState } from 'react';
+import React, { FC, useCallback, useEffect, useMemo, useState } from 'react';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import Checkbox from '@mui/material/Checkbox';
 import CircularProgress from '@mui/material/CircularProgress';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import MenuItem from '@mui/material/MenuItem';
@@ -18,7 +17,16 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { useNavigate } from 'react-router-dom';
 
-import { hasAdmin, setupRequest, signInWith } from '../setupSession';
+import { ChannelPicker } from 'apps/dashboard/features/livetv/components/ChannelPicker';
+import {
+    type PlaylistInfo,
+    type Selection,
+    LARGE_LINEUP,
+    countSelected,
+    groupChannels,
+    toSelectionBody
+} from 'apps/dashboard/features/livetv/utils/channelSelection';
+import { hasAdmin, setupRequest, setupUpload, signInWith } from '../setupSession';
 
 /* ── Shapes from the server ─────────────────────────────────────────────── */
 
@@ -28,7 +36,6 @@ interface Profile { Id: string; Name: string; IsKids: boolean }
 interface KidsLevel { Score: number; Ratings: string[] }
 interface KidsOptions { Levels: KidsLevel[]; OwnerHasPin: boolean }
 interface SourceUser { Id: string; Name: string; NeedsPin: boolean }
-interface PlaylistGroup { Name: string; Kind: 'Live' | 'OnDemand' | 'Adult'; ChannelCount: number }
 interface Tuner { Url: string; FriendlyName?: string; DeviceId?: string; Type?: string }
 
 /* ── Small building blocks ─────────────────────────────────────────────── */
@@ -378,19 +385,14 @@ const KhyloTvStep: FC<StepProps> = ({ onNext }) => {
 
 /* ── 5. Live TV ────────────────────────────────────────────────────────── */
 
-function togglePick(picked: Set<string>, name: string, on: boolean) {
-    const next = new Set(picked);
-    if (on) next.add(name);
-    else next.delete(name);
-    return next;
-}
+const emptySelection = (): Selection => ({ groups: new Set(), included: new Set(), excluded: new Set() });
 
 const LiveTvStep: FC<StepProps> = ({ onNext }) => {
     const [ kind, setKind ] = useState<'none' | 'iptv' | 'antenna'>('none');
     const [ url, setUrl ] = useState('');
     const [ guideUrl, setGuideUrl ] = useState('');
-    const [ groups, setGroups ] = useState<PlaylistGroup[] | null>(null);
-    const [ picked, setPicked ] = useState<Set<string>>(new Set());
+    const [ playlist, setPlaylist ] = useState<PlaylistInfo | null>(null);
+    const [ selection, setSelection ] = useState<Selection>(emptySelection);
     const [ tuners, setTuners ] = useState<Tuner[] | null>(null);
     const [ busy, setBusy ] = useState(false);
     const [ done, setDone ] = useState<string | null>(null);
@@ -400,9 +402,9 @@ const LiveTvStep: FC<StepProps> = ({ onNext }) => {
         setBusy(true);
         setError(null);
         try {
-            const result = await setupRequest<{ Groups: PlaylistGroup[] }>('POST', '/LiveTv/TunerHosts/TestPlaylist', { Type: 'm3u', Url: url });
-            setGroups(result.Groups.filter(g => g.Kind === 'Live'));
-            setPicked(new Set());
+            const result = await setupRequest<PlaylistInfo>('POST', '/LiveTv/TunerHosts/TestPlaylist', { Type: 'm3u', Url: url });
+            setPlaylist(result);
+            setSelection(emptySelection());
         } catch (e) {
             setError(errorText(e));
         } finally {
@@ -411,21 +413,28 @@ const LiveTvStep: FC<StepProps> = ({ onNext }) => {
     };
 
     const saveIptv = async () => {
+        if (!playlist) return;
         setBusy(true);
         setError(null);
         try {
-            await setupRequest('POST', '/LiveTv/TunerHosts', {
-                Type: 'm3u',
-                Url: url,
-                EnableChannelSelection: true,
-                IncludedGroups: [...picked],
-                IncludedChannels: [],
-                ExcludedChannels: []
-            });
+            await setupRequest('POST', '/LiveTv/TunerHosts', { Type: 'm3u', Url: url, ...toSelectionBody(playlist, selection) });
             if (guideUrl.trim()) {
                 await setupRequest('POST', '/LiveTv/ListingProviders', { Type: 'xmltv', Path: guideUrl.trim(), EnableAllTuners: true });
             }
             setDone('Your channels are being added, and the guide fills in over the next few minutes.');
+        } catch (e) {
+            setError(errorText(e));
+        } finally {
+            setBusy(false);
+        }
+    };
+
+    const uploadGuide = async (file: File) => {
+        setBusy(true);
+        setError(null);
+        try {
+            const saved = await setupUpload<{ Path: string }>('/LiveTv/ListingProviders/Xmltv/Upload', file);
+            setGuideUrl(saved.Path);
         } catch (e) {
             setError(errorText(e));
         } finally {
@@ -458,7 +467,13 @@ const LiveTvStep: FC<StepProps> = ({ onNext }) => {
         }
     };
 
-    const total = (groups ?? []).filter(g => picked.has(g.Name)).reduce((n, g) => n + g.ChannelCount, 0);
+    const total = useMemo(() => {
+        if (!playlist) return 0;
+        const groups = groupChannels(playlist);
+        return countSelected(groups.live.concat(groups.other), selection);
+    }, [ playlist, selection ]);
+
+    const noun = total === 1 ? 'channel' : 'channels';
 
     return (
         <>
@@ -475,33 +490,58 @@ const LiveTvStep: FC<StepProps> = ({ onNext }) => {
             {done && <Alert severity='success' sx={{ mb: 2 }}>{done}</Alert>}
 
             {kind === 'iptv' && !done && (
-                <Stack spacing={1.5} sx={{ maxWidth: 620, mb: 2 }}>
-                    <TextField size='small' label='Playlist address' value={url} onChange={e => setUrl(e.target.value)} helperText='The M3U link from your provider. Nothing is added until you choose your channels.' />
-                    <Box>
-                        <Button variant='outlined' disabled={!url.trim() || busy} onClick={() => { void test(); }}>{busy && !groups ? 'Reading the playlist…' : 'Test'}</Button>
-                    </Box>
-                    {groups && (
+                <Stack spacing={1.5} sx={{ mb: 2 }}>
+                    <Stack direction='row' spacing={1} alignItems='flex-start'>
+                        <TextField
+                            size='small'
+                            fullWidth
+                            label='Playlist address'
+                            value={url}
+                            onChange={e => setUrl(e.target.value)}
+                            helperText='The M3U link from your provider. Nothing is added until you choose your channels.'
+                        />
+                        <Button variant='outlined' disabled={!url.trim() || busy} onClick={() => { void test(); }} sx={{ minWidth: 150, height: 40, whiteSpace: 'nowrap' }}>
+                            {busy && !playlist ? 'Reading…' : 'Load channels'}
+                        </Button>
+                    </Stack>
+
+                    {playlist && (
                         <>
-                            <Typography sx={{ fontWeight: 600 }}>Choose your channel groups</Typography>
-                            <Typography variant='body2' sx={{ opacity: 0.7 }}>On-demand movies, series and adult channels are set aside. You can fine-tune channels later in Dashboard → Live TV.</Typography>
-                            <Box sx={{ maxHeight: 260, overflowY: 'auto', pl: 0.5 }}>
-                                {groups.map(g => (
-                                    <FormControlLabel
-                                        key={g.Name}
-                                        sx={{ display: 'flex' }}
-                                        control={<Checkbox
-                                            size='small'
-                                            checked={picked.has(g.Name)}
-                                            onChange={e => setPicked(p => togglePick(p, g.Name, e.target.checked))}
-                                        />}
-                                        label={`${g.Name} (${g.ChannelCount.toLocaleString()})`}
-                                    />
-                                ))}
+                            <Typography variant='body2' sx={{ opacity: 0.7 }}>
+                                {`${playlist.TotalCount.toLocaleString()} entries found. Search for a channel or group, or tick a whole group, then add what you picked. Movies, series and adult channels are set aside at the bottom.`}
+                            </Typography>
+                            <Box sx={{ maxHeight: '48vh', overflowY: 'auto', pr: 0.5 }}>
+                                <ChannelPicker playlist={playlist} selection={selection} onSelectionChange={setSelection} />
                             </Box>
-                            <TextField size='small' label='Program guide address (XMLTV, optional)' value={guideUrl} onChange={e => setGuideUrl(e.target.value)} />
+                            {total > LARGE_LINEUP && (
+                                <Alert severity='warning'>{`${total.toLocaleString()} channels is a lot. The guide takes longer to refresh; most people pick a few hundred.`}</Alert>
+                            )}
+                            <Stack direction='row' spacing={1} alignItems='flex-start'>
+                                <TextField
+                                    size='small'
+                                    fullWidth
+                                    label='Program guide address or file (XMLTV, optional)'
+                                    value={guideUrl}
+                                    onChange={e => setGuideUrl(e.target.value)}
+                                    helperText='The guide link from your provider, or upload the file.'
+                                />
+                                <Button component='label' variant='outlined' color='inherit' disabled={busy} sx={{ minWidth: 150, height: 40, whiteSpace: 'nowrap' }}>
+                                    Upload file
+                                    <input
+                                        hidden
+                                        type='file'
+                                        accept='.xml,.gz,.xmltv'
+                                        onChange={e => {
+                                            const file = e.target.files?.[0];
+                                            e.target.value = '';
+                                            if (file) void uploadGuide(file);
+                                        }}
+                                    />
+                                </Button>
+                            </Stack>
                             <Box>
-                                <Button variant='contained' disabled={!picked.size || busy} onClick={() => { void saveIptv(); }}>
-                                    {`Add ${total.toLocaleString()} channels`}
+                                <Button variant='contained' disabled={!total || busy} onClick={() => { void saveIptv(); }}>
+                                    {busy ? 'Adding…' : `Add ${total.toLocaleString()} ${noun}`}
                                 </Button>
                             </Box>
                         </>

@@ -189,7 +189,8 @@ const AppDrawer: FC<ResponsiveDrawerProps> = ({
                 label='Diagnostics'
                 icon={<BugReportIcon fontSize='small' />}
                 items={[
-                    { label: 'Logs', to: '/dashboard/logs' }
+                    { label: 'Logs', to: '/dashboard/logs' },
+                    { label: 'Updates', to: '/dashboard/updates' }
                 ]}
             />
 

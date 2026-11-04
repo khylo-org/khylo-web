@@ -21,7 +21,6 @@ import { queryClient } from 'utils/query/queryClient';
 import Loading from 'components/loading/LoadingComponent';
 import Page from 'components/Page';
 import { KhyloServerFileBrowserModal } from '../../components/browser/KhyloServerFileBrowserModal';
-import { KhyloUpdatesPanel } from '../../components/KhyloUpdatesPanel';
 import { ActionData } from 'types/actionData';
 
 import {
@@ -206,9 +205,6 @@ export const Component: FC = () => {
                 />
 
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, pb: 12 }}>
-                    {/* Khylo itself: updates */}
-                    <KhyloUpdatesPanel />
-
                     {/* Identity & Localization */}
                     <KhyloSettingSection
                         title='Server Identity & Localization'

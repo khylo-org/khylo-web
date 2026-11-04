@@ -81,6 +81,9 @@ const CreateBackupForm: FunctionComponent<IProps> = ({ open, onClose, onCreate }
                                 label={globalize.translate('LabelMetadata')}
                             />
                         </FormControl>
+                        <DialogContentText variant='caption' sx={{ ml: 4, mt: -0.5, mb: 1 }}>
+                            Artwork and details Khylo can download again. This can make the backup many gigabytes and take several minutes.
+                        </DialogContentText>
 
                         <FormControl>
                             <FormControlLabel

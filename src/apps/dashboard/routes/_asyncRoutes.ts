@@ -67,6 +67,7 @@ export const ASYNC_ADMIN_ROUTES: AsyncRoute[] = [
     { path: 'keys', type: AppType.Dashboard },
     { path: 'networking', type: AppType.Dashboard },
     { path: 'settings', type: AppType.Dashboard },
+    { path: 'updates', type: AppType.Dashboard },
     { path: 'webhooks', type: AppType.Dashboard },
 
     // ── Live TV (legacy, keep at end) ─────────────────────────────────────────

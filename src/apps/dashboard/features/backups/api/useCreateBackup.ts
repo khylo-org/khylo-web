@@ -1,25 +1,16 @@
 import type { BackupOptionsDto } from '@khylo/sdk/lib/generated-client/models/backup-options-dto';
-import { getBackupApi } from '@khylo/sdk/lib/utils/api/backup-api';
 import { useMutation } from '@tanstack/react-query';
+import axios from 'axios';
 
 import { useApi } from 'hooks/useApi';
-import { queryClient } from 'utils/query/queryClient';
 
-import { QUERY_KEY } from './useBackups';
-
+/** Starts a backup on the server and returns at once: a big one takes minutes, so the page follows its progress instead of waiting. */
 export const useCreateBackup = () => {
     const { api } = useApi();
 
     return useMutation({
-        mutationFn: (backupOptions: BackupOptionsDto) => (
-            getBackupApi(api!).createBackup({
-                backupOptionsDto: backupOptions
-            })
-        ),
-        onSuccess: () => {
-            void queryClient.invalidateQueries({
-                queryKey: [ QUERY_KEY ]
-            });
-        }
+        mutationFn: (backupOptions: BackupOptionsDto) => axios.post(`${api?.basePath}/Backup/CreateInBackground`, backupOptions, {
+            headers: { Authorization: `MediaBrowser Token="${api?.accessToken ?? ''}"` }
+        })
     });
 };

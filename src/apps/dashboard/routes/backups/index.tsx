@@ -1,4 +1,4 @@
-import React, { FC, useCallback, useState, useMemo } from 'react';
+import React, { FC, useCallback, useEffect, useRef, useState, useMemo } from 'react';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
@@ -14,7 +14,9 @@ import Loading from 'components/loading/LoadingComponent';
 import ConfirmDialog from 'components/ConfirmDialog';
 import SimpleAlert from 'components/SimpleAlert';
 
-import { useBackups } from 'apps/dashboard/features/backups/api/useBackups';
+import { QUERY_KEY as BACKUPS_QUERY_KEY, useBackups } from 'apps/dashboard/features/backups/api/useBackups';
+import { queryClient } from 'utils/query/queryClient';
+import { useBackupStatus } from 'apps/dashboard/features/backups/api/useBackupStatus';
 import { useCreateBackup } from 'apps/dashboard/features/backups/api/useCreateBackup';
 import { useRestoreBackup } from 'apps/dashboard/features/backups/api/useRestoreBackup';
 import CreateBackupForm from 'apps/dashboard/features/backups/components/CreateBackupForm';
@@ -49,6 +51,8 @@ export const Component: FC = () => {
     const [pendingBackupOptions, setPendingBackupOptions] = useState<BackupOptionsDto | null>(null);
 
     const createBackup = useCreateBackup();
+    const { data: runStatus } = useBackupStatus();
+    const wasRunning = useRef(false);
     const restoreBackup = useRestoreBackup();
 
     const { data: tasks } = useLiveTasks({ isHidden: false });
@@ -57,8 +61,10 @@ export const Component: FC = () => {
         setBackupInProgress(true);
         setIsCreateFormOpen(false);
         createBackup.mutate(backupOptions, {
-            onError: () => setIsErrorOccurred(true),
-            onSettled: () => setBackupInProgress(false)
+            onError: () => {
+                setBackupInProgress(false);
+                setIsErrorOccurred(true);
+            }
         });
     }, [createBackup]);
 
@@ -95,6 +101,21 @@ export const Component: FC = () => {
         setBackupToRestore(backup);
         setIsRestoreDialogOpen(true);
     }, []);
+
+    // The server says when the backup is done: then the list refreshes, or the problem is shown
+    useEffect(() => {
+        if (!runStatus) return;
+        if (runStatus.InProgress) {
+            wasRunning.current = true;
+            return;
+        }
+        if (wasRunning.current) {
+            wasRunning.current = false;
+            setBackupInProgress(false);
+            if (runStatus.Error) setIsErrorOccurred(true);
+            void queryClient.invalidateQueries({ queryKey: [BACKUPS_QUERY_KEY] });
+        }
+    }, [runStatus]);
 
     const backupList = useMemo(() => backups || [], [backups]);
 
@@ -194,7 +215,8 @@ export const Component: FC = () => {
                 />
 
                 <BackupProgressDialog
-                    open={backupInProgress}
+                    open={backupInProgress || Boolean(runStatus?.InProgress)}
+                    bytesSoFar={runStatus?.BytesSoFar}
                 />
 
                 <RestoreConfirmationDialog

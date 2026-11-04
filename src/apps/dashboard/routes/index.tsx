@@ -38,6 +38,7 @@ import { useSystemTelemetry } from '../features/system/api/useSystemTelemetry';
 import { useStorageDevices } from '../features/storage/api/useStorageDevices';
 import { useVirtualFolders } from '../features/libraries/api/useVirtualFolders';
 import { KhyloNetworkShareDialog } from '../components/browser/KhyloNetworkShareDialog';
+import { KhyloUpdatesPanel } from '../components/KhyloUpdatesPanel';
 
 import {
     KHYLO_COLORS,
@@ -440,6 +441,10 @@ export const Component: FC = () => {
                         </Typography>
                     </Box>
                 </Box>
+            </Box>
+
+            <Box sx={{ mb: 3 }}>
+                <KhyloUpdatesPanel />
             </Box>
 
             <Grid container spacing={3}>

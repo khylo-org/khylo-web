@@ -42,7 +42,7 @@
   3. **Calico Color Palette & Orange Restraint**:
      - Signature orange: `#D97732` (restricted strictly to active navigation, playback progress, focused states, and primary action buttons).
      - Text colors: Primary `#F4F1EC`, Secondary `#B4AEA7`, Muted `#858079`.
-     - Elimination of all AI-generated tropes: no purple/blue neon glows, no excessive pill shapes, no harsh gradients.
+     - Calm and restrained: no purple/blue neon glows, no excessive pill shapes, no harsh gradients.
   4. **Typography & Spacing Scale**:
      - Typography tokens: Hero (52–72px), Page Heading (34–44px), Section Heading (22–26px), Card Title (15–18px), Metadata (13–15px), Small (11–13px).
      - Spacing tokens: 4, 8, 12, 16, 24, 32, 48, 64, 80px.

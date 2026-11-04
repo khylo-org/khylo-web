@@ -10,6 +10,7 @@ import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Typography from '@mui/material/Typography';
 import SystemUpdateAltIcon from '@mui/icons-material/SystemUpdateAlt';
+import { useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 
@@ -39,9 +40,71 @@ interface UpdateStatus {
     CheckError?: string | null;
 }
 
+// The choice that's on is orange
+const activeSx = {
+    textTransform: 'none',
+    px: 2,
+    '&.Mui-selected': { bgcolor: KHYLO_COLORS.accent, color: '#fff', '&:hover': { bgcolor: KHYLO_COLORS.accentHover } }
+};
+
 const hourLabel = (hour: number) => {
     const h = hour % 12 === 0 ? 12 : hour % 12;
     return `${h} ${hour < 12 ? 'am' : 'pm'}`;
+};
+
+/** What's known about updates, refreshed every 15 seconds. */
+export const useKhyloUpdates = () => {
+    const { api } = useApi();
+    return useQuery({
+        queryKey: ['khyloUpdates'],
+        enabled: Boolean(api),
+        refetchInterval: 15000,
+        queryFn: async () => (await axios.get<UpdateStatus>(`${api?.basePath}/Khylo/Updates`, {
+            headers: { Authorization: `MediaBrowser Token="${api?.accessToken ?? ''}"` }
+        })).data
+    });
+};
+
+/** A slim line for the Operations page, only while an update is waiting or being installed. */
+export const KhyloUpdateNotice: FC = () => {
+    const { data: status } = useKhyloUpdates();
+    const navigate = useNavigate();
+    if (!status || !(status.UpdateAvailable || status.Installing)) return null;
+
+    return (
+        <Box
+            sx={{
+                mb: 3,
+                px: 2.5,
+                py: 1.5,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: 2,
+                flexWrap: 'wrap',
+                borderRadius: '10px',
+                bgcolor: KHYLO_COLORS.surfacePrimary,
+                border: `1px solid ${KHYLO_COLORS.accent}`
+            }}
+        >
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                <SystemUpdateAltIcon sx={{ fontSize: 20, color: KHYLO_COLORS.accent }} />
+                <Typography variant='body2' sx={{ fontWeight: 600, color: KHYLO_COLORS.textPrimary }}>
+                    {status.Installing ? 'Khylo is updating and will restart in a moment' : `Khylo ${status.Latest?.Build ?? ''} is available`}
+                </Typography>
+            </Box>
+            {!status.Installing && (
+                <Button
+                    size='small'
+                    variant='contained'
+                    onClick={() => navigate('/dashboard/settings')}
+                    sx={{ bgcolor: KHYLO_COLORS.accent, textTransform: 'none', fontWeight: 600, '&:hover': { bgcolor: KHYLO_COLORS.accentHover } }}
+                >
+                    View update
+                </Button>
+            )}
+        </Box>
+    );
 };
 
 /** Khylo updating itself: what's available, which releases to follow, and installing. */
@@ -55,12 +118,7 @@ export const KhyloUpdatesPanel: FC = () => {
     const [showNotes, setShowNotes] = useState(false);
 
     const headers = { Authorization: `MediaBrowser Token="${api?.accessToken ?? ''}"` };
-    const { data: status } = useQuery({
-        queryKey: ['khyloUpdates'],
-        enabled: Boolean(api),
-        refetchInterval: 15000,
-        queryFn: async () => (await axios.get<UpdateStatus>(`${api?.basePath}/Khylo/Updates`, { headers })).data
-    });
+    const { data: status } = useKhyloUpdates();
 
     const call = useCallback(async (what: string, path: string, body?: object) => {
         setBusy(what);
@@ -178,13 +236,17 @@ export const KhyloUpdatesPanel: FC = () => {
                         value={status.Channel}
                         onChange={(_, value: 'stable' | 'dev' | null) => value && run('channel', 'Settings', { Channel: value, AutoInstall: status.AutoInstall })}
                     >
-                        <ToggleButton value='stable' sx={{ textTransform: 'none', px: 2 }}>Stable releases</ToggleButton>
-                        <ToggleButton value='dev' sx={{ textTransform: 'none', px: 2 }}>Every build (dev)</ToggleButton>
+                        <ToggleButton value='stable' sx={activeSx}>Stable releases</ToggleButton>
+                        <ToggleButton value='dev' sx={activeSx}>Every build (dev)</ToggleButton>
                     </ToggleButtonGroup>
                     <FormControlLabel
                         control={
                             <Switch
                                 size='small'
+                                sx={{
+                                    '& .MuiSwitch-switchBase.Mui-checked': { color: KHYLO_COLORS.accent },
+                                    '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { bgcolor: KHYLO_COLORS.accent }
+                                }}
                                 checked={status.AutoInstall}
                                 disabled={!status.CanInstall || busy !== null}
                                 onChange={e => run('auto', 'Settings', { Channel: status.Channel, AutoInstall: e.target.checked })}

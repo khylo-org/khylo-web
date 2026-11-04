@@ -18,7 +18,7 @@ import FolderSpecialIcon from '@mui/icons-material/FolderSpecial';
 import ScheduleIcon from '@mui/icons-material/Schedule';
 import SecurityIcon from '@mui/icons-material/Security';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 
 import { useApi } from 'hooks/useApi';
@@ -37,6 +37,7 @@ import { useStopTask } from '../features/tasks/api/useStopTask';
 import { useSystemTelemetry } from '../features/system/api/useSystemTelemetry';
 import { useStorageDevices } from '../features/storage/api/useStorageDevices';
 import { useVirtualFolders } from '../features/libraries/api/useVirtualFolders';
+import { KhyloNetworkShareDialog } from '../components/browser/KhyloNetworkShareDialog';
 
 import {
     KHYLO_COLORS,
@@ -56,6 +57,13 @@ interface StorageLocation {
 const describeLocation = (l: StorageLocation) =>
     `${l.Library} (${l.Path}) since ${new Date(l.Since).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}`;
 
+// A network folder like \\nas\Movies\Action lives on the share \\nas\Movies, which is what a login connects
+const BACKSLASH = String.fromCharCode(92);
+const shareRootOf = (path: string) => {
+    const parts = path.split(BACKSLASH).filter(Boolean);
+    return path.startsWith(BACKSLASH + BACKSLASH) && parts.length >= 2 ? `${BACKSLASH}${BACKSLASH}${parts[0]}${BACKSLASH}${parts[1]}` : null;
+};
+
 export const Component: FC = () => {
     const navigate = useNavigate();
     const { api } = useApi();
@@ -67,6 +75,7 @@ export const Component: FC = () => {
     const startTask = useStartTask();
     const stopTask = useStopTask();
 
+    const [connectOpen, setConnectOpen] = useState(false);
     const [toastMessage, setToastMessage] = useState<string | null>(null);
     const [toastSeverity, setToastSeverity] = useState<'success' | 'info' | 'error'>('success');
 
@@ -82,6 +91,10 @@ export const Component: FC = () => {
     });
     const unreachable = (storage ?? []).filter(l => !l.Reachable);
     const isLibraryReachable = (name: string) => !unreachable.some(l => l.Library === name);
+    // Folders on another computer that Khylo can't open: when Khylo runs as the system account it has no login for
+    // them, so offer to connect that share with one
+    const unreachableShare = unreachable.map(l => shareRootOf(l.Path)).find(Boolean) ?? null;
+    const queryClient = useQueryClient();
 
     // Query active sessions from real backend
     const { data: sessions } = useQuery({
@@ -385,6 +398,16 @@ export const Component: FC = () => {
                         <Typography variant='caption' sx={{ color: KHYLO_COLORS.textMuted }}>
                             {'— ' + unreachable.map(describeLocation).join(', ') + '. Khylo keeps trying to reconnect; titles there won’t play until it’s back.'}
                         </Typography>
+                        {unreachableShare && (
+                            <Button
+                                size='small'
+                                variant='contained'
+                                onClick={() => setConnectOpen(true)}
+                                sx={{ bgcolor: KHYLO_COLORS.accent, textTransform: 'none', fontWeight: 600, '&:hover': { bgcolor: KHYLO_COLORS.accentHover } }}
+                            >
+                                Connect with a login
+                            </Button>
+                        )}
                     </Box>
                 ) : (
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
@@ -846,6 +869,21 @@ export const Component: FC = () => {
             </Grid>
 
             {/* Toast Feedback */}
+            {api && (
+                <KhyloNetworkShareDialog
+                    open={connectOpen}
+                    access={{ base: api.basePath, token: api.accessToken ?? '' }}
+                    canConnect
+                    initialAddress={unreachableShare ?? undefined}
+                    onClose={() => setConnectOpen(false)}
+                    onConnected={() => {
+                        setConnectOpen(false);
+                        setToastSeverity('success');
+                        setToastMessage('Connected. Khylo will pick up the libraries on it within a minute.');
+                        void queryClient.invalidateQueries({ queryKey: ['khyloStorageStatus'] });
+                    }}
+                />
+            )}
             <Snackbar
                 open={Boolean(toastMessage)}
                 autoHideDuration={3500}

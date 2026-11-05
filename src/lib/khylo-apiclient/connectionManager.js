@@ -547,7 +547,8 @@ export default class ConnectionManager {
                         const connectionMode = result.connectionMode;
                         result = result.data;
 
-                        if (compareVersions(self.minServerVersion(), result.Version) === 1) {
+                        // Khylo reports its build number (DEV-V...), which is not a numeric version; those builds always meet the minimum
+                        if (!/^DEV-/i.test(result.Version) && compareVersions(self.minServerVersion(), result.Version) === 1) {
                             console.warn('[ConnectionManager] minServerVersion requirement not met. Server version:', result.Version);
                             resolve({
                                 State: ConnectionState.ServerUpdateNeeded,

@@ -31,8 +31,10 @@ const ServerInfoWidget = ({
 }: ServerInfoWidgetProps) => {
     const { data: systemInfo, isPending } = useSystemInfo();
 
-    const displayServerVersion = getDisplayVersion(systemInfo?.Version);
-    const displayWebVersion = getDisplayVersion(__PACKAGE_JSON_VERSION__);
+    // The web app ships inside the server, so both carry the same Khylo build number
+    const khyloBuild = (systemInfo as { KhyloVersion?: string } | undefined)?.KhyloVersion;
+    const displayServerVersion = khyloBuild || systemInfo?.Version;
+    const displayWebVersion = khyloBuild || getDisplayVersion(__PACKAGE_JSON_VERSION__);
 
     return (
         <Widget

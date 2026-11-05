@@ -9,6 +9,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import ScheduleIcon from '@mui/icons-material/Schedule';
 import ArticleIcon from '@mui/icons-material/Article';
+import SystemUpdateAltIcon from '@mui/icons-material/SystemUpdateAlt';
 import FolderSpecialIcon from '@mui/icons-material/FolderSpecial';
 import LabelIcon from '@mui/icons-material/Label';
 import MoveDownIcon from '@mui/icons-material/MoveDown';
@@ -70,7 +71,8 @@ const NAV_SECTIONS: NavSection[] = [
         items: [
             { label: 'Overview', path: '/dashboard', icon: <DashboardIcon sx={{ fontSize: 18 }} />, matchExact: true },
             { label: 'Scheduled Tasks', path: '/dashboard/tasks', icon: <ScheduleIcon sx={{ fontSize: 18 }} />, matchExact: true },
-            { label: 'Activity & Logs', path: '/dashboard/activity', icon: <ArticleIcon sx={{ fontSize: 18 }} />, matchExact: true }
+            { label: 'Activity & Logs', path: '/dashboard/activity', icon: <ArticleIcon sx={{ fontSize: 18 }} />, matchExact: true },
+            { label: 'Update', path: '/dashboard/updates', icon: <SystemUpdateAltIcon sx={{ fontSize: 18 }} />, matchExact: true }
         ]
     },
     {

@@ -12,7 +12,7 @@ import khyloLogo from 'assets/img/khylo-logo.png';
 const DrawerHeaderLink = () => {
     const { data: systemInfo } = useSystemInfo();
 
-    const version = getDisplayVersion(systemInfo?.Version);
+    const version = (systemInfo as { KhyloVersion?: string } | undefined)?.KhyloVersion || getDisplayVersion(systemInfo?.Version);
 
     return (
         <ListItemLink
@@ -46,7 +46,7 @@ const DrawerHeaderLink = () => {
                     </Typography>
                     {version && (
                         <Chip
-                            label={`v${version}`}
+                            label={version}
                             size='small'
                             sx={{
                                 height: '18px',

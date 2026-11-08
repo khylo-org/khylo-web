@@ -326,7 +326,14 @@ export const KhyloUpdatesPanel: FC = () => {
                 </Stack>
 
                 {!status.CanInstall && !status.UpdateAvailable && status.WhyNot && <Alert severity='info'>{status.WhyNot}</Alert>}
-                {status.LastResult && <Alert severity={status.LastResult.includes('went back') || status.LastResult.includes('didn’t') ? 'warning' : 'success'}>{status.LastResult}</Alert>}
+                {status.LastResult && (
+                    <Alert
+                        severity={status.LastResult.includes('went back') || status.LastResult.includes('didn’t') ? 'warning' : 'success'}
+                        onClose={() => run('dismiss', 'DismissResult')}
+                    >
+                        {status.LastResult}
+                    </Alert>
+                )}
                 {status.CheckError && <Alert severity='warning'>{status.CheckError}</Alert>}
                 {message && <Alert severity={message.severity}>{message.text}</Alert>}
             </Stack>

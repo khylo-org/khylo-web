@@ -56,7 +56,9 @@ export default function (view) {
         });
     }
 
-    function updateRecordingButton(item) {
+    function updateRecordingButton(playingItem) {
+        // Watching a live channel: the thing to record is the program on now, not the channel itself
+        const item = playingItem?.Type === 'TvChannel' ? playingItem.CurrentProgram : playingItem;
         if (!item || item.Type !== 'Program') {
             if (recordingButtonManager) {
                 recordingButtonManager.destroy();

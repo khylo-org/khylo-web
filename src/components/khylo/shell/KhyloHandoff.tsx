@@ -18,6 +18,11 @@ interface HandoffDevice {
     RunTimeTicks?: number | null;
 }
 
+interface MirrorInfo {
+    SourceSessionId: string;
+    Targets: { SessionId: string }[];
+}
+
 const TICKS_PER_SECOND = 10_000_000;
 
 const progress = (d: HandoffDevice) => {
@@ -35,6 +40,7 @@ export const KhyloHandoff: FC = () => {
     const wrapperRef = useRef<HTMLDivElement>(null);
     const [ isOpen, setIsOpen ] = useState(false);
     const [ devices, setDevices ] = useState<HandoffDevice[]>([]);
+    const [ following, setFollowing ] = useState<string[]>([]);
     const [ busy, setBusy ] = useState(false);
     const [ message, setMessage ] = useState('');
 
@@ -45,6 +51,8 @@ export const KhyloHandoff: FC = () => {
         try {
             const response = await axios.get<HandoffDevice[]>(`${api.basePath}/Khylo/Handoff/Devices`, { headers: headers() });
             setDevices(response.data ?? []);
+            const mirrors = await axios.get<MirrorInfo[]>(`${api.basePath}/Khylo/Mirror`, { headers: headers() });
+            setFollowing((mirrors.data ?? []).flatMap(m => m.Targets.map(t => t.SessionId)));
         } catch (err) {
             console.warn('[KhyloHandoff] failed to load devices', err);
             setDevices([]);
@@ -76,6 +84,70 @@ export const KhyloHandoff: FC = () => {
         } catch (err) {
             console.warn('[KhyloHandoff] handoff failed', err);
             setMessage('That didn’t work. Make sure the other device is open and signed in as you.');
+        } finally {
+            setBusy(false);
+        }
+    };
+
+    // When this screen follows another, ask where it is every second and close the gap by playing a little faster or slower
+    // (a jump only when it is far out)
+    useEffect(() => {
+        if (!api) return undefined;
+        let nudged = false;
+        const timer = setInterval(() => {
+            (async () => {
+                if (!playbackManager.isPlaying()) return;
+                const before = performance.now();
+                let reference: { ItemId: string; PositionTicks: number; IsPaused: boolean } | null = null;
+                try {
+                    reference = (await axios.get(`${api.basePath}/Khylo/Mirror/Reference`, { headers: headers() })).data;
+                } catch {
+                    reference = null;
+                }
+                const current = playbackManager.currentItem();
+                const sameItem = reference && current?.Id && reference.ItemId.replace(/-/g, '') === String(current.Id).replace(/-/g, '');
+                if (!reference || reference.IsPaused || playbackManager.paused() || !sameItem) {
+                    if (nudged) playbackManager.setPlaybackRate(1);
+                    nudged = false;
+                    return;
+                }
+                // The answer was worked out about half the round trip ago
+                const wanted = reference.PositionTicks / TICKS_PER_SECOND * 1000 + (performance.now() - before) / 2;
+                const offset = Number(playbackManager.currentTime()) - wanted;
+                if (Math.abs(offset) > 1500) {
+                    playbackManager.seek((wanted + 300) * 10_000);
+                    playbackManager.setPlaybackRate(1);
+                    nudged = false;
+                } else if (Math.abs(offset) > 120) {
+                    playbackManager.setPlaybackRate(offset > 0 ? 0.94 : 1.06);
+                    nudged = true;
+                } else if (nudged) {
+                    playbackManager.setPlaybackRate(1);
+                    nudged = false;
+                }
+            })().catch(console.warn);
+        }, 1000);
+        return () => clearInterval(timer);
+    }, [ api, headers ]);
+
+    // Mirror: other devices follow this one, so the same thing plays on each. Tapping a device again lets it go.
+    const toggleMirror = async (d: HandoffDevice) => {
+        if (!api) return;
+        setBusy(true);
+        try {
+            if (following.includes(d.SessionId)) {
+                await axios.delete(`${api.basePath}/Khylo/Mirror`, { headers: headers(), params: { sessionId: d.SessionId } });
+            } else {
+                await axios.post(`${api.basePath}/Khylo/Mirror`, { TargetSessionIds: [ d.SessionId ] }, { headers: headers() });
+            }
+            await load();
+        } catch (err) {
+            console.warn('[KhyloHandoff] mirror failed', err);
+            const status = axios.isAxiosError(err) ? err.response?.status : undefined;
+            const reason = axios.isAxiosError(err) && typeof err.response?.data === 'string' ? err.response.data : '';
+            if (status === 404) setMessage('Your Khylo Server needs updating to use Mirror.');
+            else if (status === 400 && reason) setMessage(reason);
+            else setMessage('That didn’t work. Make sure the other device is open and signed in as you.');
         } finally {
             setBusy(false);
         }
@@ -139,6 +211,25 @@ export const KhyloHandoff: FC = () => {
                                 >
                                     <span className='khylo-handoff__name'>{d.DeviceName ?? d.Client}</span>
                                     <span className='khylo-handoff__detail'>{d.IsPlaying ? 'Will replace what it is playing' : 'Ready'}</span>
+                                </button>
+                            ))}
+                        </>
+                    )}
+                    {playingHere && devices.length > 0 && !message && (
+                        <>
+                            <div className='khylo-handoff__section'>Mirror what I&rsquo;m watching on</div>
+                            {devices.map(d => (
+                                <button
+                                    key={`mirror-${d.SessionId}`}
+                                    type='button'
+                                    className='khylo-handoff__row'
+                                    disabled={busy}
+                                    onClick={() => toggleMirror(d).catch(console.warn)}
+                                >
+                                    <span className='khylo-handoff__name'>{d.DeviceName ?? d.Client}</span>
+                                    <span className='khylo-handoff__detail'>
+                                        {following.includes(d.SessionId) ? 'Following this screen · click to stop' : 'Plays the same thing, together'}
+                                    </span>
                                 </button>
                             ))}
                         </>

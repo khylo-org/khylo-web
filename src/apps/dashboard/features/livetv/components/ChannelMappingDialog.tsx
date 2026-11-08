@@ -38,6 +38,8 @@ const ChannelMappingDialog: FC<ChannelMappingDialogProps> = ({ open, providerId,
     const [ filter, setFilter ] = useState<'all' | 'unmatched'>('all');
     const [ savingId, setSavingId ] = useState<string | null>(null);
     const [ error, setError ] = useState<string | null>(null);
+    // What the person picked, shown at once; the list from the server is only reloaded in the background
+    const [ picked, setPicked ] = useState<Record<string, NameIdPair>>({});
 
     const queryKey = [ 'LiveTvChannelMapping', providerId ];
     const { data, isLoading } = useQuery({
@@ -53,21 +55,30 @@ const ChannelMappingDialog: FC<ChannelMappingDialogProps> = ({ open, providerId,
     const visible = useMemo(() => {
         const term = search.trim().toLowerCase();
         return (data?.TunerChannels ?? []).filter(c =>
-            (filter === 'all' || !c.ProviderChannelId)
+            (filter === 'all' || !c.ProviderChannelId || Boolean(c.Id && picked[c.Id]))
             && (!term || (c.Name ?? '').toLowerCase().includes(term) || (c.ProviderChannelName ?? '').toLowerCase().includes(term)));
-    }, [ data, search, filter ]);
-    const unmatched = (data?.TunerChannels ?? []).filter(c => !c.ProviderChannelId).length;
+    }, [ data, search, filter, picked ]);
+    const unmatched = (data?.TunerChannels ?? []).filter(c => !c.ProviderChannelId && !(c.Id && picked[c.Id])).length;
 
     const map = async (tunerChannelId: string, guideChannel: NameIdPair | null) => {
         if (!api || !guideChannel?.Id) return;
         setSavingId(tunerChannelId);
         setError(null);
+        setPicked(previous => ({ ...previous, [tunerChannelId]: guideChannel }));
         try {
             await getLiveTvApi(api).setChannelMapping({
                 setChannelMappingDto: { ProviderId: providerId, TunerChannelId: tunerChannelId, ProviderChannelId: guideChannel.Id }
             });
-            await queryClient.invalidateQueries({ queryKey });
+            // Keep it in the list too, then refresh quietly in the background
+            queryClient.setQueryData(queryKey, (old: typeof data) => old && ({
+                ...old,
+                TunerChannels: old.TunerChannels?.map(c => c.Id === tunerChannelId ?
+                    { ...c, ProviderChannelId: guideChannel.Id, ProviderChannelName: guideChannel.Name } :
+                    c)
+            }));
+            queryClient.invalidateQueries({ queryKey }).catch(() => undefined);
         } catch {
+            setPicked(previous => Object.fromEntries(Object.entries(previous).filter(([ id ]) => id !== tunerChannelId)));
             setError('Couldn\'t save that match. Try again.');
         } finally {
             setSavingId(null);
@@ -117,7 +128,9 @@ const ChannelMappingDialog: FC<ChannelMappingDialogProps> = ({ open, providerId,
                 )}
 
                 {visible.map(channel => {
-                    const current = providerChannels.find(p => p.Id === channel.ProviderChannelId) ?? null;
+                    const current = (channel.Id && picked[channel.Id])
+                        || providerChannels.find(p => p.Id === channel.ProviderChannelId)
+                        || null;
                     return (
                         <Box
                             key={channel.Id}

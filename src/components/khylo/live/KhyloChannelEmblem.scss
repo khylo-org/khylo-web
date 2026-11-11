@@ -43,6 +43,12 @@
         }
     }
 
+    // White and light logos are made for a dark screen and disappear on the light tile, so they get a dark one
+    &--logo-dark {
+        background: linear-gradient(145deg, #2c2e33 0%, #1a1b1d 100%);
+        border-color: rgba(255, 255, 255, 0.14);
+    }
+
     &--artwork img {
         width: 100%;
         height: 100%;

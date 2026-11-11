@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState, type FC } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type FC } from 'react';
 import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import classNames from 'classnames';
@@ -13,6 +13,8 @@ import { useApi } from 'hooks/useApi';
 import { playMediaItem } from '../media/mediaUtils';
 import { KhyloButton } from '../ui/KhyloButton';
 import { KhyloLiveTvHero } from './KhyloLiveTvHero';
+import { GUIDE_PAGE_SIZE, loadGuideSession, saveGuideSession } from './guideSession';
+import { logoToneFor, type LogoTone } from './logoTone';
 import { KhyloMultiView } from './KhyloMultiView';
 import { KhyloProgramDrawer } from './KhyloProgramDrawer';
 import { KhyloRecordings, RECORDINGS_QUERY_KEY } from './KhyloRecordings';
@@ -35,8 +37,6 @@ const GUIDE_HOURS = 6;
 const SLOT_MINUTES = 30;
 const PX_PER_MINUTE = 6;
 const MINUTE_MS = 60_000;
-// Big IPTV lineups have thousands of channels; the guide shows them a page at a time
-const PAGE_SIZE = 60;
 
 const floorToSlot = (time: number) => {
     const slotMs = SLOT_MINUTES * MINUTE_MS;
@@ -47,11 +47,13 @@ const floorToSlot = (time: number) => {
 const ChannelLogo: FC<{ channel: BaseItemDto }> = ({ channel }) => {
     const { api } = useApi();
     const [ failed, setFailed ] = useState(false);
+    // White logos (made for a dark screen) vanish on the light tile, so they get a dark one
+    const [ tone, setTone ] = useState<LogoTone>('light');
     const logo = failed ? null : getChannelLogoUrl(api, channel);
     if (logo) {
         return (
-            <span className='khylo-channel-emblem khylo-channel-emblem--logo khylo-channel-emblem--sm' aria-hidden='true'>
-                <img src={logo} alt='' loading='lazy' onError={() => setFailed(true)} />
+            <span className={classNames('khylo-channel-emblem khylo-channel-emblem--logo khylo-channel-emblem--sm', { 'khylo-channel-emblem--logo-dark': tone === 'dark' })} aria-hidden='true'>
+                <img src={logo} alt='' loading='lazy' onError={() => setFailed(true)} onLoad={event => setTone(logoToneFor(event.currentTarget))} />
             </span>
         );
     }
@@ -124,11 +126,17 @@ export const KhyloLiveTvView: FC = () => {
     const { api, user } = useApi();
     const queryClient = useQueryClient();
     const [ now, setNow ] = useState(() => Date.now());
-    const [ view, setView ] = useState<'guide' | 'recordings'>('guide');
-    const [ category, setCategory ] = useState<LiveTvCategory>('all');
-    const [ search, setSearch ] = useState('');
-    const [ visibleCount, setVisibleCount ] = useState(PAGE_SIZE);
-    const [ selectedId, setSelectedId ] = useState<string | null>(null);
+    // Coming back from watching a channel puts the guide where it was left: the channels loaded, the category and search, the
+    // highlighted channel and how far down the list was scrolled
+    const restored = useRef(loadGuideSession(user?.Id));
+    const [ view, setView ] = useState<'guide' | 'recordings'>(restored.current?.view ?? 'guide');
+    const [ category, setCategory ] = useState<LiveTvCategory>(restored.current?.category ?? 'all');
+    const [ search, setSearch ] = useState(restored.current?.search ?? '');
+    const [ visibleCount, setVisibleCount ] = useState(restored.current?.visibleCount ?? GUIDE_PAGE_SIZE);
+    const [ selectedId, setSelectedId ] = useState<string | null>(restored.current?.selectedId ?? null);
+    const gridRef = useRef<HTMLDivElement>(null);
+    const pendingScroll = useRef(restored.current?.scrollTop ?? 0);
+    const lastFilter = useRef(`${restored.current?.category ?? 'all'}|${restored.current?.search ?? ''}`);
     const [ focusedProgram, setFocusedProgram ] = useState<BaseItemDto | null>(null);
     const [ drawerProgram, setDrawerProgram ] = useState<BaseItemDto | null>(null);
     const [ isMultiViewOpen, setIsMultiViewOpen ] = useState(false);
@@ -140,9 +148,19 @@ export const KhyloLiveTvView: FC = () => {
         return () => clearInterval(timer);
     }, []);
 
+    // A new category or search starts again at the first page (the restored one is not new)
     useEffect(() => {
-        setVisibleCount(PAGE_SIZE);
-    }, [ category, search ]);
+        const filter = `${category}|${search}`;
+        if (filter === lastFilter.current) return;
+        lastFilter.current = filter;
+        setVisibleCount(GUIDE_PAGE_SIZE);
+        pendingScroll.current = 0;
+        saveGuideSession(user?.Id, { scrollTop: 0 });
+    }, [ category, search, user?.Id ]);
+
+    useEffect(() => {
+        saveGuideSession(user?.Id, { view, category, search, visibleCount, selectedId });
+    }, [ user?.Id, view, category, search, visibleCount, selectedId ]);
 
     const windowStartMs = floorToSlot(now);
     const windowEndMs = windowStartMs + GUIDE_HOURS * 60 * MINUTE_MS;
@@ -164,6 +182,16 @@ export const KhyloLiveTvView: FC = () => {
     const channels = channelPage?.items;
     const totalChannels = channelPage?.total ?? 0;
     const pageChannels = useMemo(() => channels ?? [], [channels]);
+
+    // Once the channels that were showing are back, scroll to where the list was
+    useLayoutEffect(() => {
+        const grid = gridRef.current;
+        if (!grid || pendingScroll.current <= 0 || pageChannels.length === 0) return;
+        const wanted = Math.min(restored.current?.visibleCount ?? GUIDE_PAGE_SIZE, totalChannels);
+        if (pageChannels.length < wanted) return;
+        grid.scrollTop = pendingScroll.current;
+        pendingScroll.current = 0;
+    }, [ pageChannels.length, totalChannels, view ]);
     const pageIds = useMemo(() => pageChannels.map(c => c.Id!).filter(Boolean), [pageChannels]);
 
     const { data: programs } = useQuery({
@@ -316,7 +344,14 @@ export const KhyloLiveTvView: FC = () => {
                             </p>
                         ) : (
                             <section className='khylo-live__guide' aria-label='TV guide'>
-                                <div className='khylo-live__grid'>
+                                <div
+                                    className='khylo-live__grid'
+                                    ref={gridRef}
+                                    onScroll={event => {
+                                        // Not while the saved place is still being put back
+                                        if (pendingScroll.current <= 0) saveGuideSession(user?.Id, { scrollTop: event.currentTarget.scrollTop });
+                                    }}
+                                >
                                     <div className='khylo-live__grid-inner' style={{ width: `calc(var(--khylo-live-channel-col) + ${timelineWidth}px)` }}>
                                         <div className='khylo-live__time-row'>
                                             <div className='khylo-live__corner'>
@@ -375,7 +410,7 @@ export const KhyloLiveTvView: FC = () => {
 
                         {totalChannels > pageChannels.length && (
                             <div className='khylo-livetv__more'>
-                                <KhyloButton variant='secondary' onClick={() => setVisibleCount(count => count + PAGE_SIZE)}>
+                                <KhyloButton variant='secondary' onClick={() => setVisibleCount(count => count + GUIDE_PAGE_SIZE)}>
                                     {`Show more channels (${(totalChannels - pageChannels.length).toLocaleString()} more)`}
                                 </KhyloButton>
                             </div>

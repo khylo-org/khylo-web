@@ -53,6 +53,8 @@ function onSubmit(e) {
 
     if (form.querySelector('#txtManualPassword').value != form.querySelector('#txtPasswordConfirm').value) {
         toast(globalize.translate('PasswordMatchError'));
+    } else if (form.querySelector('#txtManualPassword').value.length < 8) {
+        toast(globalize.translate('PasswordTooShortError'));
     } else {
         submit(form);
     }

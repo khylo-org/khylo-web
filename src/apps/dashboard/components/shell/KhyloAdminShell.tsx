@@ -6,6 +6,7 @@ import Button from '@mui/material/Button';
 import Drawer from '@mui/material/Drawer';
 import MenuIcon from '@mui/icons-material/Menu';
 import CloseIcon from '@mui/icons-material/Close';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import ScheduleIcon from '@mui/icons-material/Schedule';
 import ArticleIcon from '@mui/icons-material/Article';
@@ -217,8 +218,44 @@ export const KhyloAdminShell: FC<KhyloAdminShellProps> = ({ children }) => {
                     '&::-webkit-scrollbar-thumb': { bgcolor: 'rgba(255,255,255,0.1)', borderRadius: 2 }
                 }}
             >
-                {NAV_SECTIONS.map((section, sIdx) => (
-                    <Box key={sIdx} sx={{ mb: 2.5 }}>
+                {/* The way back to the Khylo web app (home, movies, music...) from the server console */}
+                <RouterLink
+                    to='/home'
+                    onClick={() => !isDesktop && setMobileOpen(false)}
+                    style={{ textDecoration: 'none' }}
+                    title='Leave the server console and go to Khylo'
+                >
+                    <Box
+                        sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1.5,
+                            px: 1.5,
+                            py: 1,
+                            mb: 2.5,
+                            borderRadius: '6px',
+                            border: `1px solid ${KHYLO_COLORS.borderDefault}`,
+                            bgcolor: KHYLO_COLORS.surfaceSecondary,
+                            color: KHYLO_COLORS.textPrimary,
+                            transition: 'all 0.15s ease',
+                            '&:hover': {
+                                bgcolor: KHYLO_COLORS.surfaceHover,
+                                borderColor: KHYLO_COLORS.accent,
+                                color: KHYLO_COLORS.accent
+                            }
+                        }}
+                    >
+                        <Box sx={{ display: 'flex', alignItems: 'center', color: 'inherit' }}>
+                            <ArrowBackIcon sx={{ fontSize: 18 }} />
+                        </Box>
+                        <Typography variant='body2' sx={{ fontSize: '0.82rem', fontWeight: 600 }}>
+                            Back to Khylo
+                        </Typography>
+                    </Box>
+                </RouterLink>
+
+                {NAV_SECTIONS.map((section) => (
+                    <Box key={section.title} sx={{ mb: 2.5 }}>
                         <Typography
                             variant='caption'
                             sx={{

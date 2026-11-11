@@ -23,6 +23,7 @@ import VideocamIcon from '@mui/icons-material/Videocam';
 import { useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { getLibraryStructureApi } from '@khylo/sdk/lib/utils/api/library-structure-api';
+import type { VirtualFolderInfo } from '@khylo/sdk/lib/generated-client/models/virtual-folder-info';
 
 import { useApi } from 'hooks/useApi';
 import { useVirtualFolders } from 'apps/dashboard/features/libraries/api/useVirtualFolders';
@@ -30,6 +31,7 @@ import { getCurrentLibrary, serverReason, GONE_MESSAGE } from 'apps/dashboard/fe
 import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
 import ConfirmDialog from 'components/ConfirmDialog';
+import { ServerConnections } from 'lib/khylo-apiclient';
 import { useStartTask } from 'apps/dashboard/features/tasks/api/useStartTask';
 import useLiveTasks from 'apps/dashboard/features/tasks/hooks/useLiveTasks';
 
@@ -81,7 +83,43 @@ export const Component: FC = () => {
         }
     }, [librariesTask, startTask]);
 
-    const [ deleteError, setDeleteError ] = useState<string | null>(null);
+    const [ actionError, setActionError ] = useState<string | null>(null);
+    const [ notice, setNotice ] = useState<string | null>(null);
+    const [ scanning, setScanning ] = useState<Set<string>>(() => new Set());
+
+    // Scans one library for new and changed files, the way a scan of everything does, without touching the others
+    const handleScanLibrary = useCallback(async (lib: VirtualFolderInfo) => {
+        const apiClient = ServerConnections.currentApiClient();
+        if (!api || !apiClient) return;
+        const key = String(lib.ItemId || lib.Name);
+        setScanning(prev => new Set(prev).add(key));
+        try {
+            // The library's current id first: renaming a library gives it a new one
+            const current = await getCurrentLibrary(api, lib);
+            if (!current?.ItemId) {
+                void queryClient.invalidateQueries({ queryKey: ['virtualFolders'] });
+                setActionError(GONE_MESSAGE);
+                return;
+            }
+            await apiClient.refreshItem(current.ItemId, {
+                Recursive: true,
+                ImageRefreshMode: 'Default',
+                MetadataRefreshMode: 'Default',
+                ReplaceAllImages: false,
+                ReplaceAllMetadata: false
+            });
+            setNotice(`Scanning “${lib.Name}” for new and changed files. It carries on in the background.`);
+        } catch (err: unknown) {
+            console.error('Failed to scan library', err);
+            setActionError(serverReason(err, `Couldn’t start a scan of “${lib.Name}”.`));
+        } finally {
+            setScanning(prev => {
+                const next = new Set(prev);
+                next.delete(key);
+                return next;
+            });
+        }
+    }, [api, queryClient]);
 
     const handleDelete = useCallback(async () => {
         if (!deleteTarget || !api) return;
@@ -95,7 +133,7 @@ export const Component: FC = () => {
         } catch (e) {
             console.error('Failed to remove library', e);
             setDeleteTarget(null);
-            setDeleteError(serverReason(e, 'Couldn\u2019t remove the library.'));
+            setActionError(serverReason(e, 'Couldn\u2019t remove the library.'));
             void queryClient.invalidateQueries({ queryKey: ['virtualFolders'] });
         }
     }, [deleteTarget, api, queryClient]);
@@ -212,6 +250,19 @@ export const Component: FC = () => {
             align: 'right',
             render: (lib: any) => (
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 0.5 }}>
+                    <IconButton
+                        size='small'
+                        title='Scan this library'
+                        disabled={scanning.has(String(lib.ItemId || lib.Name))}
+                        onClick={() => { void handleScanLibrary(lib); }}
+                        sx={{
+                            color: KHYLO_COLORS.textSecondary,
+                            '&:hover': { color: KHYLO_COLORS.textPrimary, bgcolor: KHYLO_COLORS.surfaceHover }
+                        }}
+                    >
+                        <RefreshIcon sx={{ fontSize: 17 }} />
+                    </IconButton>
+
                     <IconButton
                         size='small'
                         title='Edit Library'
@@ -333,8 +384,11 @@ export const Component: FC = () => {
                     searchPlaceholder='Filter libraries by name or path…'
                 />
             )}
-            <Snackbar open={Boolean(deleteError)} autoHideDuration={6000} onClose={() => setDeleteError(null)} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
-                <Alert severity='error' onClose={() => setDeleteError(null)}>{deleteError}</Alert>
+            <Snackbar open={Boolean(notice)} autoHideDuration={5000} onClose={() => setNotice(null)} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
+                <Alert severity='success' onClose={() => setNotice(null)}>{notice}</Alert>
+            </Snackbar>
+            <Snackbar open={Boolean(actionError)} autoHideDuration={6000} onClose={() => setActionError(null)} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
+                <Alert severity='error' onClose={() => setActionError(null)}>{actionError}</Alert>
             </Snackbar>
         </KhyloPage>
     );

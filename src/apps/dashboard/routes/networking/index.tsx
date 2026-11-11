@@ -15,6 +15,7 @@ import type { NetworkConfiguration } from '@khylo/sdk/lib/generated-client/model
 import { ServerConnections } from 'lib/khylo-apiclient';
 import { getSystemApi } from '@khylo/sdk/lib/utils/api/system-api';
 import { QUERY_KEY as CONFIG_QUERY_KEY, useNamedConfiguration } from 'hooks/useNamedConfiguration';
+import { QUERY_KEY as SERVER_CONFIG_QUERY_KEY, fetchConfiguration, useConfiguration } from 'hooks/useConfiguration';
 import { queryClient } from 'utils/query/queryClient';
 import Loading from 'components/loading/LoadingComponent';
 import Page from 'components/Page';
@@ -40,10 +41,14 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     if (!api) throw new Error('No Api instance available');
 
     let newConfig: NetworkConfiguration;
+    let corsHosts: string[] | undefined;
     const contentType = request.headers.get('content-type') || '';
 
     if (contentType.includes('application/json')) {
-        newConfig = await request.json() as NetworkConfiguration;
+        // The websites allowed to use the server live in the server's general settings, not the network settings
+        const { CorsHosts, ...network } = await request.json() as NetworkConfiguration & { CorsHosts?: string[] };
+        newConfig = network as NetworkConfiguration;
+        corsHosts = CorsHosts;
     } else {
         const formData = await request.formData();
         const data = Object.fromEntries(formData);
@@ -81,6 +86,12 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
     await getSystemApi(api).updateNamedConfiguration({ key: CONFIG_KEY, body: newConfig });
 
+    if (corsHosts) {
+        const serverConfig = await fetchConfiguration(api);
+        await getSystemApi(api).updateConfiguration({ serverConfiguration: { ...serverConfig, CorsHosts: corsHosts } });
+        void queryClient.invalidateQueries({ queryKey: [SERVER_CONFIG_QUERY_KEY] });
+    }
+
     void queryClient.invalidateQueries({
         queryKey: [CONFIG_QUERY_KEY, CONFIG_KEY]
     });
@@ -88,8 +99,12 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     return { isSaved: true };
 };
 
+// The factory setting is a single "*", which no longer means every website, so it isn't shown as a website
+const websitesText = (hosts?: string[] | null) => (hosts || []).filter(host => host.trim() !== '*').join(', ');
+
 export const Component: FC = () => {
     const { data: config, isPending, isError } = useNamedConfiguration<NetworkConfiguration>(CONFIG_KEY);
+    const { data: serverConfig } = useConfiguration();
     const navigation = useNavigation();
     const actionData = useActionData() as ActionData | undefined;
     const isSubmitting = navigation.state === 'submitting';
@@ -120,6 +135,7 @@ export const Component: FC = () => {
     const [enableRemoteAccess, setEnableRemoteAccess] = useState<boolean>(true);
     const [remoteIpFilter, setRemoteIpFilter] = useState<string>('');
     const [isBlacklist, setIsBlacklist] = useState<boolean>(false);
+    const [allowedWebsites, setAllowedWebsites] = useState<string>('');
 
     // Endpoints
     const [useSameUri, setUseSameUri] = useState<boolean>(true);
@@ -167,6 +183,12 @@ export const Component: FC = () => {
     }, [config]);
 
     useEffect(() => {
+        if (serverConfig) {
+            setAllowedWebsites(websitesText(serverConfig.CorsHosts));
+        }
+    }, [serverConfig]);
+
+    useEffect(() => {
         if (actionData?.isSaved) {
             // Check if HTTP port changed (port rebind requires server restart)
             if (internalHttpPort !== originalInternalHttpPort) {
@@ -201,9 +223,12 @@ export const Component: FC = () => {
             certificatePassword !== (config.CertificatePassword || '') ||
             enableRemoteAccess !== Boolean(config.EnableRemoteAccess ?? true) ||
             remoteIpFilter !== (config.RemoteIPFilter?.join(', ') || '') ||
-            isBlacklist !== Boolean(config.IsRemoteIPFilterBlacklist)
+            isBlacklist !== Boolean(config.IsRemoteIPFilterBlacklist) ||
+            (serverConfig ? allowedWebsites !== websitesText(serverConfig.CorsHosts) : false)
         );
     }, [
+        serverConfig,
+        allowedWebsites,
         config,
         internalHttpPort,
         internalHttpsPort,
@@ -234,7 +259,7 @@ export const Component: FC = () => {
             publishedServerUri.external = publishedUriExternal.trim();
         }
 
-        const payload: NetworkConfiguration = {
+        const payload: NetworkConfiguration & { CorsHosts?: string[] } = {
             InternalHttpPort: internalHttpPort,
             InternalHttpsPort: internalHttpsPort,
             PublicHttpPort: publicHttpPort,
@@ -253,11 +278,15 @@ export const Component: FC = () => {
             EnableRemoteAccess: enableRemoteAccess,
             RemoteIPFilter: splitString(remoteIpFilter),
             IsRemoteIPFilterBlacklist: isBlacklist,
-            PublishedServerUriBySubnet: encodePublishedServerUris(publishedServerUri)
+            PublishedServerUriBySubnet: encodePublishedServerUris(publishedServerUri),
+            // Only sent once the current list has loaded, so saving early can't wipe it
+            CorsHosts: serverConfig ? splitString(allowedWebsites) : undefined
         };
 
         submit(payload as any, { method: 'post', encType: 'application/json' });
     }, [
+        serverConfig,
+        allowedWebsites,
         internalHttpPort,
         internalHttpsPort,
         publicHttpPort,
@@ -284,6 +313,9 @@ export const Component: FC = () => {
     ]);
 
     const handleDiscard = useCallback(() => {
+        if (serverConfig) {
+            setAllowedWebsites(websitesText(serverConfig.CorsHosts));
+        }
         if (config) {
             setInternalHttpPort(config.InternalHttpPort ?? 8096);
             setInternalHttpsPort(config.InternalHttpsPort ?? 8920);
@@ -304,7 +336,7 @@ export const Component: FC = () => {
             setRemoteIpFilter(config.RemoteIPFilter?.join(', ') || '');
             setIsBlacklist(Boolean(config.IsRemoteIPFilterBlacklist));
         }
-    }, [config]);
+    }, [config, serverConfig]);
 
     if (isPending) return <Loading />;
 
@@ -494,6 +526,8 @@ export const Component: FC = () => {
                                 control={
                                     <TextField
                                         size='small'
+                                        name='khylo-certificate-path'
+                                        autoComplete='off'
                                         value={certificatePath}
                                         onChange={(e) => setCertificatePath(e.target.value)}
                                         placeholder='/etc/ssl/certs/khylo.pfx'
@@ -520,6 +554,8 @@ export const Component: FC = () => {
                                     <TextField
                                         type='password'
                                         size='small'
+                                        name='khylo-certificate-password'
+                                        autoComplete='new-password'
                                         value={certificatePassword}
                                         onChange={(e) => setCertificatePassword(e.target.value)}
                                         sx={{ width: 220 }}
@@ -543,6 +579,20 @@ export const Component: FC = () => {
                                         checked={enableRemoteAccess}
                                         onChange={(_, checked) => setEnableRemoteAccess(checked)}
                                         color='primary'
+                                    />
+                                }
+                            />
+
+                            <KhyloSettingRow
+                                title='Allowed Websites'
+                                description="Websites other than this server's own address that may use it from a browser, for example a casting receiver. Separate with commas. Leave empty to allow only this server's own address."
+                                control={
+                                    <TextField
+                                        size='small'
+                                        value={allowedWebsites}
+                                        onChange={(e) => setAllowedWebsites(e.target.value)}
+                                        placeholder='https://receiver.example.com'
+                                        sx={{ width: 260 }}
                                     />
                                 }
                             />

@@ -6,6 +6,7 @@ import IconButton from '@mui/material/IconButton';
 import TextField from '@mui/material/TextField';
 import Stack from '@mui/material/Stack';
 import Alert from '@mui/material/Alert';
+import Switch from '@mui/material/Switch';
 import CircularProgress from '@mui/material/CircularProgress';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
@@ -26,6 +27,7 @@ import FolderSpecialIcon from '@mui/icons-material/FolderSpecial';
 import FolderOpenIcon from '@mui/icons-material/FolderOpen';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getCurrentLibrary, serverReason, GONE_MESSAGE } from 'apps/dashboard/features/libraries/api/currentLibrary';
+import { isRealtimeMonitorOn, withRealtimeMonitor } from 'apps/dashboard/features/libraries/api/libraryOptions';
 import { useQueryClient } from '@tanstack/react-query';
 import { getLibraryStructureApi } from '@khylo/sdk/lib/utils/api/library-structure-api';
 
@@ -77,6 +79,7 @@ export const Component: FC = () => {
     const [pathToDelete, setPathToDelete] = useState<string | null>(null);
     const [isDeleteLibConfirmOpen, setIsDeleteLibConfirmOpen] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
+    const [isAutoScanSaving, setIsAutoScanSaving] = useState(false);
     const [feedback, setFeedback] = useState<{ severity: 'success' | 'error'; message: string } | null>(null);
 
     useEffect(() => {
@@ -122,6 +125,37 @@ export const Component: FC = () => {
             setIsSaving(false);
         }
     }, [api, library, libraryName, libraryId, navigate, queryClient]);
+
+    // Saves at once, like a switch should. The library's current options are fetched first and sent back whole with
+    // only this one changed, because the server replaces all of a library's options with what it is sent.
+    const handleAutoScan = useCallback(async (enabled: boolean) => {
+        if (!api || !library) return;
+        setIsAutoScanSaving(true);
+        setFeedback(null);
+        try {
+            const current = await getCurrentLibrary(api, library);
+            if (!current?.ItemId) {
+                void queryClient.invalidateQueries({ queryKey: ['virtualFolders'] });
+                setFeedback({ severity: 'error', message: GONE_MESSAGE });
+                return;
+            }
+            await getLibraryStructureApi(api).updateLibraryOptions({
+                updateLibraryOptionsDto: {
+                    Id: current.ItemId,
+                    LibraryOptions: withRealtimeMonitor(current.LibraryOptions, enabled)
+                }
+            });
+            await queryClient.invalidateQueries({ queryKey: ['virtualFolders'] });
+            let message = 'Automatic scanning is off for this library. Scan it from the Media Libraries page when its files change.';
+            if (enabled) message = 'This library now scans itself when files are added or changed.';
+            setFeedback({ severity: 'success', message });
+        } catch (err: unknown) {
+            console.error('[LibraryEdit] Automatic scanning change failed:', err);
+            setFeedback({ severity: 'error', message: serverReason(err, 'Couldn’t change automatic scanning.') });
+        } finally {
+            setIsAutoScanSaving(false);
+        }
+    }, [api, library, queryClient]);
 
     const handleAddPath = useCallback(async () => {
         if (!api || !library || !newPathInput.trim()) return;
@@ -337,6 +371,28 @@ export const Component: FC = () => {
                             </Box>
                             <Typography variant='body2' sx={{ fontWeight: 600, color: KHYLO_COLORS.textPrimary }}>
                                 {domain.label}
+                            </Typography>
+                        </Box>
+                    </KhyloSettingRow>
+                </KhyloSettingSection>
+
+                <KhyloSettingSection
+                    title='Automatic Scanning'
+                    description='Whether this library updates itself when its files change.'
+                >
+                    <KhyloSettingRow
+                        label='Scan when files change'
+                        description='When files are added, changed or removed in this library&apos;s folders, Khylo notices and updates the library by itself after a short delay. Folders on a network share (a NAS) often can&apos;t report changes, so scan those yourself from the Media Libraries page.'
+                    >
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <Switch
+                                checked={isRealtimeMonitorOn(library.LibraryOptions)}
+                                disabled={isAutoScanSaving}
+                                onChange={(_event, checked) => { void handleAutoScan(checked); }}
+                                slotProps={{ input: { 'aria-label': 'Scan this library automatically when its files change' } }}
+                            />
+                            <Typography variant='body2' sx={{ fontWeight: 600, color: KHYLO_COLORS.textPrimary, minWidth: 28 }}>
+                                {isRealtimeMonitorOn(library.LibraryOptions) ? 'On' : 'Off'}
                             </Typography>
                         </Box>
                     </KhyloSettingRow>

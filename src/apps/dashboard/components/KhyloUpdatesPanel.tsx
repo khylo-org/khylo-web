@@ -15,6 +15,7 @@ import { useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 
+import { elapsedSeconds, formatElapsed } from './updateProgress';
 import { useApi } from 'hooks/useApi';
 
 import { KHYLO_COLORS, KhyloPanel } from './ui';
@@ -41,6 +42,10 @@ interface UpdateStatus {
     CheckError?: string | null;
     Stage?: string | null;
     Percent?: number | null;
+    UpdatingTo?: string | null;
+    UpdateStartedAt?: string | null;
+    ServerTime?: string | null;
+    UpdateLog?: { At: string; Text: string }[];
 }
 
 // The choice that's on is orange
@@ -61,7 +66,8 @@ export const useKhyloUpdates = () => {
     return useQuery({
         queryKey: ['khyloUpdates'],
         enabled: Boolean(api),
-        refetchInterval: 15000,
+        // Quickly while an update runs or the server is restarting, so the page notices the moment it is back
+        refetchInterval: query => (query.state.data?.Installing || query.state.status === 'error' ? 3000 : 15000),
         queryFn: async () => (await axios.get<UpdateStatus>(`${api?.basePath}/Khylo/Updates`, {
             headers: { Authorization: `MediaBrowser Token="${api?.accessToken ?? ''}"` }
         })).data
@@ -134,11 +140,20 @@ const WhatsNewList: FC<{ notes: string }> = ({ notes }) => {
     );
 };
 
-const formatElapsed = (seconds: number) => `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
+/** What the update has done so far, one line each with its time. */
+const UpdateLogList: FC<{ lines: { At: string; Text: string }[] }> = ({ lines }) => (
+    <Stack spacing={0.25} sx={{ mt: 1.25, p: 1.5, borderRadius: '6px', bgcolor: KHYLO_COLORS.surfacePrimary, maxHeight: 220, overflowY: 'auto' }}>
+        {lines.map(line => (
+            <Typography key={`${line.At}${line.Text}`} variant='caption' sx={{ color: KHYLO_COLORS.textSecondary, fontFamily: 'monospace', fontSize: '0.72rem' }}>
+                {`${new Date(line.At).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', second: '2-digit' })}  ${line.Text}`}
+            </Typography>
+        ))}
+    </Stack>
+);
 
 /** What an update in progress is doing, and about how long it takes. Khylo restarts partway, so the page waits for it. */
-const UpdateProgress: FC<{ status: UpdateStatus; restarting: boolean; elapsed: number }> = ({ status, restarting, elapsed }) => {
-    let label = 'Starting the update…';
+const UpdateProgress: FC<{ status: UpdateStatus; restarting: boolean; elapsed?: number }> = ({ status, restarting, elapsed }) => {
+    let label = status.UpdatingTo ? `Updating to ${status.UpdatingTo}…` : 'Starting the update…';
     let value: number | undefined;
     if (restarting || status.Stage === 'Installing') {
         label = restarting ? 'Khylo is restarting with the new version…' : 'Installing…';
@@ -158,9 +173,11 @@ const UpdateProgress: FC<{ status: UpdateStatus; restarting: boolean; elapsed: n
                 sx={{ height: 6, borderRadius: 3, bgcolor: KHYLO_COLORS.borderDefault, '& .MuiLinearProgress-bar': { bgcolor: KHYLO_COLORS.accent } }}
             />
             <Typography variant='caption' sx={{ display: 'block', mt: 1.25, color: KHYLO_COLORS.textMuted }}>
-                This usually takes 2 to 3 minutes in all. {formatElapsed(elapsed)} so far. Anyone watching is interrupted when Khylo restarts,
+                This usually takes 2 to 3 minutes in all (longer the first time on a very large library).
+                {elapsed === undefined ? '' : ` ${formatElapsed(elapsed)} so far.`} Anyone watching is interrupted when Khylo restarts,
                 and this page reconnects by itself.
             </Typography>
+            {status.UpdateLog && status.UpdateLog.length > 0 && <UpdateLogList lines={status.UpdateLog} />}
         </Box>
     );
 };
@@ -175,17 +192,19 @@ export const KhyloUpdatesPanel: FC = () => {
     const [message, setMessage] = useState<{ severity: 'success' | 'error' | 'info'; text: string } | null>(null);
     const [showNotes, setShowNotes] = useState(true);
     const [updating, setUpdating] = useState<{ since: number; fromBuild: string } | null>(null);
-    const [elapsed, setElapsed] = useState(0);
+    const [now, setNow] = useState(() => Date.now());
+    const [showLog, setShowLog] = useState(false);
 
     const headers = { Authorization: `MediaBrowser Token="${api?.accessToken ?? ''}"` };
-    const { data: status, isError } = useKhyloUpdates();
+    const { data: status, isError, dataUpdatedAt } = useKhyloUpdates();
 
     // While an update runs: count the time, and notice when the new version has come back
+    const running = Boolean(updating || status?.Installing);
     useEffect(() => {
-        if (!updating) return undefined;
-        const timer = window.setInterval(() => setElapsed(Math.floor((Date.now() - updating.since) / 1000)), 1000);
+        if (!running) return undefined;
+        const timer = window.setInterval(() => setNow(Date.now()), 1000);
         return () => window.clearInterval(timer);
-    }, [updating]);
+    }, [running]);
 
     useEffect(() => {
         if (!updating || !status || isError) return;
@@ -217,7 +236,6 @@ export const KhyloUpdatesPanel: FC = () => {
     const install = useCallback(async () => {
         if (!window.confirm('Khylo will restart to update. This takes about 2 to 3 minutes, and anyone watching will be interrupted. Update now?')) return;
         if (await call('install', 'Install')) {
-            setElapsed(0);
             setUpdating({ since: Date.now(), fromBuild: status?.CurrentBuild ?? '' });
         }
     }, [call, status]);
@@ -265,7 +283,7 @@ export const KhyloUpdatesPanel: FC = () => {
             }
         >
             <Stack spacing={2}>
-                {(updating || status.Installing) && <UpdateProgress status={status} restarting={isError} elapsed={elapsed} />}
+                {(updating || status.Installing) && <UpdateProgress status={status} restarting={isError} elapsed={elapsedSeconds(status, dataUpdatedAt, now, updating?.since)} />}
                 {!updating && !status.Installing && status.UpdateAvailable && status.Latest ? (
                     <Box>
                         <Typography variant='body2' sx={{ fontWeight: 600, color: KHYLO_COLORS.textPrimary }}>
@@ -333,6 +351,14 @@ export const KhyloUpdatesPanel: FC = () => {
                     >
                         {status.LastResult}
                     </Alert>
+                )}
+                {!running && status.UpdateLog && status.UpdateLog.length > 0 && (
+                    <Box>
+                        <Button size='small' variant='text' onClick={() => setShowLog(v => !v)} sx={{ textTransform: 'none', color: KHYLO_COLORS.textSecondary }}>
+                            {showLog ? 'Hide update log' : 'Show update log'}
+                        </Button>
+                        {showLog && <UpdateLogList lines={status.UpdateLog} />}
+                    </Box>
                 )}
                 {status.CheckError && <Alert severity='warning'>{status.CheckError}</Alert>}
                 {message && <Alert severity={message.severity}>{message.text}</Alert>}

@@ -1,8 +1,9 @@
-import React, { FC, useState, useMemo, useCallback } from 'react';
+import React, { FC, useState, useMemo, useCallback, useEffect } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
+import LinearProgress from '@mui/material/LinearProgress';
 import Stack from '@mui/material/Stack';
 import AddIcon from '@mui/icons-material/Add';
 import RefreshIcon from '@mui/icons-material/Refresh';
@@ -26,7 +27,8 @@ import { getLibraryStructureApi } from '@khylo/sdk/lib/utils/api/library-structu
 import type { VirtualFolderInfo } from '@khylo/sdk/lib/generated-client/models/virtual-folder-info';
 
 import { useApi } from 'hooks/useApi';
-import { useVirtualFolders } from 'apps/dashboard/features/libraries/api/useVirtualFolders';
+import { QUERY_KEY as VIRTUAL_FOLDERS_KEY, useVirtualFolders } from 'apps/dashboard/features/libraries/api/useVirtualFolders';
+import { lastScannedLabel, scanJustEnded, scanView, type ScanRequest } from 'apps/dashboard/features/libraries/api/scanStatus';
 import { getCurrentLibrary, serverReason, GONE_MESSAGE } from 'apps/dashboard/features/libraries/api/currentLibrary';
 import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
@@ -64,11 +66,93 @@ const DOMAIN_MAP: Record<string, DomainMeta> = {
     mixed: { label: 'Mixed Media', icon: <FolderSpecialIcon sx={{ fontSize: 16 }} /> }
 };
 
+const LAST_SCAN_KEY = 'khylo.lastLibraryScan.';
+
+const getLastScan = (id: string): number | undefined => {
+    try {
+        const saved = Number(window.localStorage.getItem(LAST_SCAN_KEY + id));
+        return Number.isFinite(saved) && saved > 0 ? saved : undefined;
+    } catch {
+        return undefined;
+    }
+};
+
+const setLastScan = (id: string, at: number) => {
+    try {
+        window.localStorage.setItem(LAST_SCAN_KEY + id, String(at));
+    } catch {
+        // Not remembered when the browser won't store it
+    }
+};
+
+interface ScanLineProps {
+    request: ScanRequest | undefined;
+    folder: { RefreshStatus?: string | null; RefreshProgress?: number | null };
+    now: number;
+    lastScan: number | undefined;
+}
+
+/** Under a library's name: whether it is scanning right now, or when it was last scanned from here. */
+const ScanLine: FC<ScanLineProps> = ({ request, folder, now, lastScan }) => {
+    const view = scanView(request, folder, now);
+    if (view.state === 'scanning') {
+        return (
+            <Box sx={{ minWidth: 150 }}>
+                <Typography variant='caption' sx={{ color: KHYLO_COLORS.accent, fontWeight: 600 }}>
+                    {view.percent === undefined ? 'Scanning…' : `Scanning… ${view.percent}%`}
+                </Typography>
+                <LinearProgress
+                    variant={view.percent === undefined ? 'indeterminate' : 'determinate'}
+                    value={view.percent}
+                    sx={{ height: 3, borderRadius: 2, mt: 0.25, bgcolor: KHYLO_COLORS.borderDefault, '& .MuiLinearProgress-bar': { bgcolor: KHYLO_COLORS.accent } }}
+                />
+            </Box>
+        );
+    }
+    if (view.state === 'starting') {
+        return <Typography variant='caption' sx={{ color: KHYLO_COLORS.accent, fontWeight: 600 }}>Scan starting…</Typography>;
+    }
+    if (lastScan) {
+        return <Typography variant='caption' sx={{ color: KHYLO_COLORS.textMuted }}>{`Last scanned ${lastScannedLabel(lastScan, now)}`}</Typography>;
+    }
+    return null;
+};
+
 export const Component: FC = () => {
     const navigate = useNavigate();
     const { api } = useApi();
     const queryClient = useQueryClient();
-    const { data: virtualFolders, isPending: isLoading } = useVirtualFolders();
+    // Scans asked for from this page, by library id, until they have ended
+    const [ scans, setScans ] = useState<Record<string, ScanRequest>>({});
+    const watching = Object.keys(scans).length > 0;
+    const { data: virtualFolders, isPending: isLoading } = useVirtualFolders(watching);
+    const [ now, setNow ] = useState(() => Date.now());
+
+    useEffect(() => {
+        if (!watching) return undefined;
+        const timer = window.setInterval(() => setNow(Date.now()), 1000);
+        return () => window.clearInterval(timer);
+    }, [ watching ]);
+
+    // Notice a scan beginning and ending, say so once, and remember when it ended
+    useEffect(() => {
+        if (!watching) return;
+        const ended: string[] = [];
+        const next: Record<string, ScanRequest> = {};
+        for (const [ id, request ] of Object.entries(scans)) {
+            const folder = virtualFolders?.find(f => (f.ItemId || f.Name) === id);
+            const seen = request.seenActive || folder?.RefreshStatus === 'Active';
+            const current = { ...request, seenActive: seen };
+            if (scanJustEnded(current, scanView(current, folder, now))) {
+                ended.push(id);
+                setLastScan(id, now);
+                setNotice(`Finished scanning \u201c${folder?.Name ?? 'the library'}\u201d.`);
+            } else {
+                next[id] = current;
+            }
+        }
+        if (ended.length > 0 || Object.keys(next).some(id => next[id].seenActive !== scans[id].seenActive)) setScans(next);
+    }, [ virtualFolders, now, scans, watching ]);
     const { data: tasks } = useLiveTasks({ isHidden: false });
     const startTask = useStartTask();
 
@@ -97,7 +181,7 @@ export const Component: FC = () => {
             // The library's current id first: renaming a library gives it a new one
             const current = await getCurrentLibrary(api, lib);
             if (!current?.ItemId) {
-                void queryClient.invalidateQueries({ queryKey: ['virtualFolders'] });
+                void queryClient.invalidateQueries({ queryKey: [ VIRTUAL_FOLDERS_KEY ] });
                 setActionError(GONE_MESSAGE);
                 return;
             }
@@ -108,7 +192,8 @@ export const Component: FC = () => {
                 ReplaceAllImages: false,
                 ReplaceAllMetadata: false
             });
-            setNotice(`Scanning “${lib.Name}” for new and changed files. It carries on in the background.`);
+            setScans(prev => ({ ...prev, [key]: { startedAt: Date.now(), seenActive: false } }));
+            setNotice(`Scan of \u201c${lib.Name}\u201d started. Its progress shows on its row.`);
         } catch (err: unknown) {
             console.error('Failed to scan library', err);
             setActionError(serverReason(err, `Couldn’t start a scan of “${lib.Name}”.`));
@@ -128,13 +213,13 @@ export const Component: FC = () => {
             if (current?.Name) {
                 await getLibraryStructureApi(api).removeVirtualFolder({ name: current.Name, refreshLibrary: true });
             }
-            void queryClient.invalidateQueries({ queryKey: ['virtualFolders'] });
+            void queryClient.invalidateQueries({ queryKey: [ VIRTUAL_FOLDERS_KEY ] });
             setDeleteTarget(null);
         } catch (e) {
             console.error('Failed to remove library', e);
             setDeleteTarget(null);
             setActionError(serverReason(e, 'Couldn\u2019t remove the library.'));
-            void queryClient.invalidateQueries({ queryKey: ['virtualFolders'] });
+            void queryClient.invalidateQueries({ queryKey: [ VIRTUAL_FOLDERS_KEY ] });
         }
     }, [deleteTarget, api, queryClient]);
 
@@ -182,6 +267,7 @@ export const Component: FC = () => {
                             </Typography>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mt: 0.25 }}>
                                 <KhyloStatusBadge label={domain.label} color='idle' />
+                                <ScanLine request={scans[String(lib.ItemId || lib.Name)]} folder={lib} now={now} lastScan={getLastScan(String(lib.ItemId || lib.Name))} />
                             </Box>
                         </Box>
                     </Box>
@@ -253,7 +339,7 @@ export const Component: FC = () => {
                     <IconButton
                         size='small'
                         title='Scan this library'
-                        disabled={scanning.has(String(lib.ItemId || lib.Name))}
+                        disabled={scanning.has(String(lib.ItemId || lib.Name)) || scanView(scans[String(lib.ItemId || lib.Name)], lib, now).state !== 'none'}
                         onClick={() => { void handleScanLibrary(lib); }}
                         sx={{
                             color: KHYLO_COLORS.textSecondary,

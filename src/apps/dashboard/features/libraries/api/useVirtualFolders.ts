@@ -12,12 +12,14 @@ const fetchVirtualFolders = async (api: Api, options?: AxiosRequestConfig) => {
     return response.data;
 };
 
-export const useVirtualFolders = () => {
+/** The libraries. While one is scanning (or a scan was just asked for) they are asked again every two seconds. */
+export const useVirtualFolders = (watchScans = false) => {
     const { api } = useApi();
 
     return useQuery({
         queryKey: [ QUERY_KEY ],
         queryFn: ({ signal }) => fetchVirtualFolders(api!, { signal }),
-        enabled: !!api
+        enabled: !!api,
+        refetchInterval: query => (watchScans || query.state.data?.some(folder => folder.RefreshStatus === 'Active') ? 2000 : false)
     });
 };

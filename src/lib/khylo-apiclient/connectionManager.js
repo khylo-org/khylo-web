@@ -11,6 +11,7 @@ import { createApiClient } from 'utils/khylo-apiclient/createApiClient';
 import { equalsIgnoreCase } from 'utils/string';
 
 import { ConnectionMode } from './connectionMode';
+import { forgetSavedLogin, isNewInstallAtKnownAddress } from './serverIdentity';
 import { ConnectionState } from './connectionState';
 import getServerAddress from './utils/getServerAddress';
 
@@ -554,6 +555,12 @@ export default class ConnectionManager {
                                 State: ConnectionState.ServerUpdateNeeded,
                                 Servers: [server]
                             });
+                        } else if (isNewInstallAtKnownAddress(server, result)) {
+                            // Khylo was removed and installed again here: a new server that nobody has set up yet. Nothing saved
+                            // for the old one is sent to it; it is simply the server at this address now.
+                            console.info('[ConnectionManager] a new Khylo, not yet set up, is at this address: forgetting the old one');
+                            forgetSavedLogin(server, result);
+                            onSuccessfulConnection(server, result, connectionMode, serverUrl, false, resolve, options);
                         } else if (server.Id && result.Id !== server.Id) {
                             console.warn(
                                 '[ConnectionManager] http request succeeded, but found a different server Id than what was expected'

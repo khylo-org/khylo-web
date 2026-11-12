@@ -18,6 +18,9 @@ import Breadcrumbs from '@mui/material/Breadcrumbs';
 import Link from '@mui/material/Link';
 import Chip from '@mui/material/Chip';
 import Tooltip from '@mui/material/Tooltip';
+import Checkbox from '@mui/material/Checkbox';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import CloseIcon from '@mui/icons-material/Close';
 import FolderIcon from '@mui/icons-material/Folder';
 import FolderOpenIcon from '@mui/icons-material/FolderOpen';
@@ -44,6 +47,7 @@ import {
     type NetworkShare,
     type ServerAccess
 } from './KhyloNetworkShareDialog';
+import { accessView, askForFolderAccess, fetchFolderAccess, waitForAccess, type FolderAccess } from './folderAccess';
 
 export interface FileSystemEntry {
     Name: string;
@@ -65,6 +69,13 @@ interface KhyloServerFileBrowserModalProps {
 const mappedHint = (m: MappedDrive) => {
     if (m.Reachable) return `${m.Address}, mapped as ${m.Letter} on this computer`;
     return `${m.Address} is mapped as ${m.Letter} on this computer. Click to connect it with your login for the share.`;
+};
+
+/** The line offering to let Khylo change files in a folder it can already read. */
+const CHANGES_LINE = {
+    no: 'Will Khylo record into this folder, or delete from it?',
+    waiting: 'Letting Khylo change files here… up to a minute.',
+    failed: 'Khylo still can’t change files here. Give the account more access in Windows.'
 };
 
 export const KhyloServerFileBrowserModal: FC<KhyloServerFileBrowserModalProps> = ({
@@ -96,6 +107,11 @@ export const KhyloServerFileBrowserModal: FC<KhyloServerFileBrowserModalProps> =
     // Drives mapped on the server's computer (Windows). The server can't use their letters, but it can connect the address
     const [mappedDrives, setMappedDrives] = useState<MappedDrive[]>([]);
     const [shareDraft, setShareDraft] = useState<{ address: string; username: string } | null>(null);
+    // Whether Khylo is allowed into the folder being shown (a folder it can't open lists as empty), and giving it access
+    const [folderAccess, setFolderAccess] = useState<FolderAccess | null>(null);
+    const [allowChanges, setAllowChanges] = useState(false);
+    const [giving, setGiving] = useState<'no' | 'waiting' | 'failed'>('no');
+    const [changesGivenFor, setChangesGivenFor] = useState<string[]>([]);
 
     const access = useMemo<ServerAccess>(() => {
         const legacy = ServerConnections.currentApiClient();
@@ -220,6 +236,43 @@ export const KhyloServerFileBrowserModal: FC<KhyloServerFileBrowserModalProps> =
             setIsLoading(false);
         }
     }, [api, includeFiles]);
+
+    // Ask the server whether it is allowed into the folder on show
+    useEffect(() => {
+        setFolderAccess(null);
+        setGiving('no');
+        if (!open || isLoading || !currentPath) return undefined;
+        let current = true;
+        fetchFolderAccess(access, currentPath)
+            .then(result => { if (current) setFolderAccess(result); })
+            .catch(() => { /* an older server: nothing to say */ });
+        return () => {
+            current = false;
+        };
+    }, [open, isLoading, currentPath, entries, access]);
+
+    const giveAccess = useCallback(async (withChanges: boolean) => {
+        const path = currentPath;
+        setGiving('waiting');
+        setErrorMsg(null);
+        try {
+            await askForFolderAccess(access, path, withChanges);
+        } catch (err) {
+            const said = axios.isAxiosError(err) ? err.response?.data : null;
+            setGiving('no');
+            setErrorMsg(typeof said === 'string' && said ? said : 'Khylo couldn\u2019t ask for access to that folder.');
+            return;
+        }
+        if (await waitForAccess(() => fetchFolderAccess(access, path, withChanges), withChanges)) {
+            if (withChanges) setChangesGivenFor(given => [ ...given, path ]);
+            setGiving('no');
+            void loadDirectory(path);
+        } else {
+            setGiving('failed');
+        }
+    }, [access, currentPath, loadDirectory]);
+
+    const view = useMemo(() => accessView(folderAccess, currentPath), [folderAccess, currentPath]);
 
     // Initialize state when modal opens
     useEffect(() => {
@@ -660,6 +713,20 @@ export const KhyloServerFileBrowserModal: FC<KhyloServerFileBrowserModalProps> =
                     }}
                 />
 
+                {view.kind === 'canAllowChanges' && !changesGivenFor.includes(currentPath) && (
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Typography variant='caption' sx={{ color: KHYLO_COLORS.textMuted }}>
+                            {CHANGES_LINE[giving]}
+                        </Typography>
+                        {giving === 'no' && (
+                            <Button size='small' variant='text' onClick={() => { void giveAccess(true); }} sx={{ textTransform: 'none', flexShrink: 0 }}>
+                                Allow changes
+                            </Button>
+                        )}
+                        {giving === 'waiting' && <CircularProgress size={14} sx={{ color: KHYLO_COLORS.accent }} />}
+                    </Box>
+                )}
+
                 {/* Error Banner */}
                 {errorMsg && (
                     <Box
@@ -695,6 +762,47 @@ export const KhyloServerFileBrowserModal: FC<KhyloServerFileBrowserModalProps> =
                             <Typography variant='body2' sx={{ color: KHYLO_COLORS.textMuted }}>
                                 Reading directory contents…
                             </Typography>
+                        </Box>
+                    ) : (view.kind === 'canGive' || view.kind === 'blocked') ? (
+                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', flexDirection: 'column', gap: 1.25, px: 4, textAlign: 'center' }}>
+                            <LockOutlinedIcon sx={{ fontSize: 32, color: KHYLO_COLORS.textMuted }} />
+                            <Typography variant='body2' sx={{ color: KHYLO_COLORS.textSecondary }}>
+                                {view.message}
+                            </Typography>
+                            {view.kind === 'canGive' && giving === 'no' && (
+                                <>
+                                    <FormControlLabel
+                                        control={<Checkbox size='small' checked={allowChanges} onChange={(e) => setAllowChanges(e.target.checked)} />}
+                                        label={<Typography variant='caption' sx={{ color: KHYLO_COLORS.textMuted }}>Also let Khylo add and delete files here (for recordings, or deleting from Khylo)</Typography>}
+                                    />
+                                    <Button variant='contained' size='small' onClick={() => { void giveAccess(allowChanges); }} sx={{ textTransform: 'none' }}>
+                                        Give Khylo access to this folder
+                                    </Button>
+                                    <Typography variant='caption' sx={{ color: KHYLO_COLORS.textMuted }}>
+                                        Khylo gets this folder and what is inside it, nothing else on this PC.
+                                    </Typography>
+                                </>
+                            )}
+                            {giving === 'waiting' && (
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
+                                    <CircularProgress size={18} sx={{ color: KHYLO_COLORS.accent }} />
+                                    <Typography variant='caption' sx={{ color: KHYLO_COLORS.textMuted }}>
+                                        Giving Khylo access… This usually takes up to a minute, longer for a very big folder.
+                                    </Typography>
+                                </Box>
+                            )}
+                            {giving === 'failed' && (
+                                <>
+                                    <Typography variant='caption' sx={{ color: KHYLO_COLORS.status.danger.fg }}>
+                                        Khylo still can’t open the folder. If it is very big, Windows may still be working on it: press
+                                        Check again in a few minutes. Otherwise give the account access in Windows (right-click the folder,
+                                        Properties, Security), or run Khylo’s setup again and choose to run it as the system.
+                                    </Typography>
+                                    <Button variant='outlined' size='small' onClick={() => { void loadDirectory(currentPath); }} sx={{ textTransform: 'none' }}>
+                                        Check again
+                                    </Button>
+                                </>
+                            )}
                         </Box>
                     ) : filteredEntries.length === 0 ? (
                         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', flexDirection: 'column', gap: 1 }}>

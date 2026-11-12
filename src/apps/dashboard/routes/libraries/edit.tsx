@@ -33,7 +33,7 @@ import { getLibraryStructureApi } from '@khylo/sdk/lib/utils/api/library-structu
 
 import { useApi } from 'hooks/useApi';
 import KhyloServerFileBrowserModal from '../../components/browser/KhyloServerFileBrowserModal';
-import { useVirtualFolders } from 'apps/dashboard/features/libraries/api/useVirtualFolders';
+import { QUERY_KEY as VIRTUAL_FOLDERS_KEY, useVirtualFolders } from 'apps/dashboard/features/libraries/api/useVirtualFolders';
 import ConfirmDialog from 'components/ConfirmDialog';
 import {
     KHYLO_COLORS,
@@ -101,7 +101,7 @@ export const Component: FC = () => {
         try {
             const current = await getCurrentLibrary(api, library);
             if (!current?.Name) {
-                void queryClient.invalidateQueries({ queryKey: ['virtualFolders'] });
+                void queryClient.invalidateQueries({ queryKey: [ VIRTUAL_FOLDERS_KEY ] });
                 setFeedback({ severity: 'error', message: GONE_MESSAGE });
                 return;
             }
@@ -111,7 +111,7 @@ export const Component: FC = () => {
                 newName,
                 refreshLibrary: true
             });
-            await queryClient.invalidateQueries({ queryKey: ['virtualFolders'] });
+            await queryClient.invalidateQueries({ queryKey: [ VIRTUAL_FOLDERS_KEY ] });
             // Renaming gives the library a new id: follow it so this page keeps working
             const renamed = await getCurrentLibrary(api, { Name: newName, Locations: current.Locations });
             if (renamed?.ItemId && renamed.ItemId !== libraryId) {
@@ -135,7 +135,7 @@ export const Component: FC = () => {
         try {
             const current = await getCurrentLibrary(api, library);
             if (!current?.ItemId) {
-                void queryClient.invalidateQueries({ queryKey: ['virtualFolders'] });
+                void queryClient.invalidateQueries({ queryKey: [ VIRTUAL_FOLDERS_KEY ] });
                 setFeedback({ severity: 'error', message: GONE_MESSAGE });
                 return;
             }
@@ -145,7 +145,7 @@ export const Component: FC = () => {
                     LibraryOptions: withRealtimeMonitor(current.LibraryOptions, enabled)
                 }
             });
-            await queryClient.invalidateQueries({ queryKey: ['virtualFolders'] });
+            await queryClient.invalidateQueries({ queryKey: [ VIRTUAL_FOLDERS_KEY ] });
             let message = 'Automatic scanning is off for this library. Scan it from the Media Libraries page when its files change.';
             if (enabled) message = 'This library now scans itself when files are added or changed.';
             setFeedback({ severity: 'success', message });
@@ -162,7 +162,7 @@ export const Component: FC = () => {
         try {
             const current = await getCurrentLibrary(api, library);
             if (!current?.Name) {
-                void queryClient.invalidateQueries({ queryKey: ['virtualFolders'] });
+                void queryClient.invalidateQueries({ queryKey: [ VIRTUAL_FOLDERS_KEY ] });
                 setFeedback({ severity: 'error', message: GONE_MESSAGE });
                 return;
             }
@@ -174,7 +174,7 @@ export const Component: FC = () => {
                 refreshLibrary: true
             });
             setNewPathInput('');
-            void queryClient.invalidateQueries({ queryKey: ['virtualFolders'] });
+            void queryClient.invalidateQueries({ queryKey: [ VIRTUAL_FOLDERS_KEY ] });
             setFeedback({ severity: 'success', message: 'Storage location attached and queued for scanning.' });
         } catch (err: any) {
             console.error('[LibraryEdit] Add path failed:', err);
@@ -187,7 +187,7 @@ export const Component: FC = () => {
         try {
             const current = await getCurrentLibrary(api, library);
             if (!current?.Name) {
-                void queryClient.invalidateQueries({ queryKey: ['virtualFolders'] });
+                void queryClient.invalidateQueries({ queryKey: [ VIRTUAL_FOLDERS_KEY ] });
                 setPathToDelete(null);
                 setFeedback({ severity: 'error', message: GONE_MESSAGE });
                 return;
@@ -198,7 +198,7 @@ export const Component: FC = () => {
                 refreshLibrary: true
             });
             setPathToDelete(null);
-            void queryClient.invalidateQueries({ queryKey: ['virtualFolders'] });
+            void queryClient.invalidateQueries({ queryKey: [ VIRTUAL_FOLDERS_KEY ] });
             setFeedback({ severity: 'success', message: 'Storage path detached from library.' });
         } catch (err: any) {
             console.error('[LibraryEdit] Remove path failed:', err);
@@ -213,7 +213,7 @@ export const Component: FC = () => {
             const current = await getCurrentLibrary(api, library);
             if (!current?.Name) {
                 // Already gone: nothing left to delete
-                await queryClient.invalidateQueries({ queryKey: ['virtualFolders'] });
+                await queryClient.invalidateQueries({ queryKey: [ VIRTUAL_FOLDERS_KEY ] });
                 navigate('/dashboard/libraries');
                 return;
             }
@@ -221,7 +221,7 @@ export const Component: FC = () => {
                 name: current.Name,
                 refreshLibrary: true
             });
-            void queryClient.invalidateQueries({ queryKey: ['virtualFolders'] });
+            void queryClient.invalidateQueries({ queryKey: [ VIRTUAL_FOLDERS_KEY ] });
             navigate('/dashboard/libraries');
         } catch (err: any) {
             console.error('[LibraryEdit] Delete library failed:', err);

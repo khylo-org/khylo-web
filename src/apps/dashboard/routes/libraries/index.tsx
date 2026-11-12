@@ -33,6 +33,7 @@ import { getCurrentLibrary, serverReason, GONE_MESSAGE } from 'apps/dashboard/fe
 import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
 import ConfirmDialog from 'components/ConfirmDialog';
+import LibraryAccessLine from 'apps/dashboard/components/browser/LibraryAccessLine';
 import { ServerConnections } from 'lib/khylo-apiclient';
 import { useStartTask } from 'apps/dashboard/features/tasks/api/useStartTask';
 import useLiveTasks from 'apps/dashboard/features/tasks/hooks/useLiveTasks';
@@ -269,6 +270,7 @@ export const Component: FC = () => {
                                 <KhyloStatusBadge label={domain.label} color='idle' />
                                 <ScanLine request={scans[String(lib.ItemId || lib.Name)]} folder={lib} now={now} lastScan={getLastScan(String(lib.ItemId || lib.Name))} />
                             </Box>
+                            <LibraryAccessLine locations={lib.Locations ?? []} recheckKey={getLastScan(String(lib.ItemId || lib.Name))} />
                         </Box>
                     </Box>
                 );

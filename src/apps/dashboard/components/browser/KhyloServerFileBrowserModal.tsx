@@ -111,6 +111,11 @@ export const KhyloServerFileBrowserModal: FC<KhyloServerFileBrowserModalProps> =
     const [folderAccess, setFolderAccess] = useState<FolderAccess | null>(null);
     const [allowChanges, setAllowChanges] = useState(false);
     const [giving, setGiving] = useState<'no' | 'waiting' | 'failed'>('no');
+    // While Windows works through a big folder: how many folders inside are still locked
+    const [stillLocked, setStillLocked] = useState<number | null>(null);
+    // Pressing Select Path first makes sure Khylo can read the folder and everything in it, and gives it access when it can't
+    const [checking, setChecking] = useState(false);
+    const [leaveAnyway, setLeaveAnyway] = useState<string | null>(null);
     const [changesGivenFor, setChangesGivenFor] = useState<string[]>([]);
 
     const access = useMemo<ServerAccess>(() => {
@@ -251,9 +256,10 @@ export const KhyloServerFileBrowserModal: FC<KhyloServerFileBrowserModalProps> =
         };
     }, [open, isLoading, currentPath, entries, access]);
 
-    const giveAccess = useCallback(async (withChanges: boolean) => {
-        const path = currentPath;
+    /** Asks for access to the folder and everything in it, and waits until the server can really open it all. True when it can. */
+    const giveAccess = useCallback(async (withChanges: boolean, path = currentPath) => {
         setGiving('waiting');
+        setStillLocked(null);
         setErrorMsg(null);
         try {
             await askForFolderAccess(access, path, withChanges);
@@ -261,15 +267,18 @@ export const KhyloServerFileBrowserModal: FC<KhyloServerFileBrowserModalProps> =
             const said = axios.isAxiosError(err) ? err.response?.data : null;
             setGiving('no');
             setErrorMsg(typeof said === 'string' && said ? said : 'Khylo couldn\u2019t ask for access to that folder.');
-            return;
+            return false;
         }
-        if (await waitForAccess(() => fetchFolderAccess(access, path, withChanges), withChanges)) {
+        const result = await waitForAccess(() => fetchFolderAccess(access, path, withChanges, true), withChanges, undefined, undefined, undefined, setStillLocked);
+        setStillLocked(null);
+        if (result === 'done') {
             if (withChanges) setChangesGivenFor(given => [ ...given, path ]);
             setGiving('no');
             void loadDirectory(path);
-        } else {
-            setGiving('failed');
+            return true;
         }
+        setGiving('failed');
+        return false;
     }, [access, currentPath, loadDirectory]);
 
     const view = useMemo(() => accessView(folderAccess, currentPath), [folderAccess, currentPath]);
@@ -342,12 +351,38 @@ export const KhyloServerFileBrowserModal: FC<KhyloServerFileBrowserModalProps> =
         }
     }, [manualInput, loadDirectory]);
 
-    const handleConfirmSelection = useCallback(() => {
-        if (currentPath) {
-            onSelect(currentPath);
-            onClose();
+    const finishSelection = useCallback((path: string) => {
+        onSelect(path);
+        onClose();
+    }, [onSelect, onClose]);
+
+    // A folder Khylo can't read, or can't read everything in, is given access first (one click on Select Path, never one per
+    // sub-folder); what can't be fixed from here is said, with the steps, before the library is made and silently comes up short
+    const handleConfirmSelection = useCallback(async () => {
+        if (!currentPath) return;
+        setChecking(true);
+        setErrorMsg(null);
+        setLeaveAnyway(null);
+        let found: FolderAccess | null = null;
+        try {
+            found = await fetchFolderAccess(access, currentPath, false, true);
+        } catch {
+            // An older server: nothing to check
         }
-    }, [currentPath, onSelect, onClose]);
+        const result = accessView(found, currentPath);
+        if (result.kind === 'fine' || result.kind === 'canAllowChanges') {
+            setChecking(false);
+            finishSelection(currentPath);
+        } else if (result.kind === 'canGive' || (result.kind === 'partlyBlocked' && result.canGive)) {
+            const done = await giveAccess(false, currentPath);
+            setChecking(false);
+            if (done) finishSelection(currentPath);
+        } else {
+            setChecking(false);
+            setErrorMsg(result.message);
+            setLeaveAnyway(currentPath);
+        }
+    }, [access, currentPath, finishSelection, giveAccess]);
 
     // Parse breadcrumbs for Windows paths (e.g. C:\Users\name\...)
     const breadcrumbSegments = useMemo(() => {
@@ -787,16 +822,18 @@ export const KhyloServerFileBrowserModal: FC<KhyloServerFileBrowserModalProps> =
                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
                                     <CircularProgress size={18} sx={{ color: KHYLO_COLORS.accent }} />
                                     <Typography variant='caption' sx={{ color: KHYLO_COLORS.textMuted }}>
-                                        Giving Khylo access… This usually takes up to a minute, longer for a very big folder.
+                                        {stillLocked === null || stillLocked === 0
+                                            ? 'Giving Khylo access… This usually takes up to a minute, longer for a very big folder.'
+                                            : `Giving Khylo access… Windows is working through the folders: ${stillLocked} still locked.`}
                                     </Typography>
                                 </Box>
                             )}
                             {giving === 'failed' && (
                                 <>
                                     <Typography variant='caption' sx={{ color: KHYLO_COLORS.status.danger.fg }}>
-                                        Khylo still can’t open the folder. If it is very big, Windows may still be working on it: press
-                                        Check again in a few minutes. Otherwise give the account access in Windows (right-click the folder,
-                                        Properties, Security), or run Khylo’s setup again and choose to run it as the system.
+                                        Khylo still can’t open everything in the folder. If it is very big, Windows may still be working on it:
+                                        press Check again in a few minutes. A folder the system itself isn’t allowed to change has to be opened to
+                                        Khylo in Windows (right-click it, Properties, Security), or run Khylo’s setup again and choose to run it as the system.
                                     </Typography>
                                     <Button variant='outlined' size='small' onClick={() => { void loadDirectory(currentPath); }} sx={{ textTransform: 'none' }}>
                                         Check again
@@ -900,9 +937,9 @@ export const KhyloServerFileBrowserModal: FC<KhyloServerFileBrowserModalProps> =
                     <Button
                         variant='contained'
                         size='small'
-                        disabled={!currentPath || isLoading}
-                        startIcon={<CheckCircleIcon sx={{ fontSize: 16 }} />}
-                        onClick={handleConfirmSelection}
+                        disabled={!currentPath || isLoading || checking || giving === 'waiting'}
+                        startIcon={checking || giving === 'waiting' ? <CircularProgress size={14} sx={{ color: 'inherit' }} /> : <CheckCircleIcon sx={{ fontSize: 16 }} />}
+                        onClick={() => { void handleConfirmSelection(); }}
                         sx={{
                             bgcolor: KHYLO_COLORS.accent,
                             fontWeight: 600,
@@ -911,8 +948,13 @@ export const KhyloServerFileBrowserModal: FC<KhyloServerFileBrowserModalProps> =
                             '&:hover': { bgcolor: '#c4692a' }
                         }}
                     >
-                        Select Path
+                        {checking || giving === 'waiting' ? 'Checking access…' : 'Select Path'}
                     </Button>
+                    {leaveAnyway && (
+                        <Button size='small' variant='text' onClick={() => finishSelection(leaveAnyway)} sx={{ textTransform: 'none', color: KHYLO_COLORS.textMuted }}>
+                            Select anyway
+                        </Button>
+                    )}
                 </Box>
             </DialogActions>
         </Dialog>

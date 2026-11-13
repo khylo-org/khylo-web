@@ -53,6 +53,10 @@ interface StorageLocation {
     Path: string;
     Reachable: boolean;
     Since: string;
+    /** What Windows or the file server said when Khylo last tried to connect it (only while it can't be reached). */
+    Reason?: string | null;
+    /** Advice about how the folder is written, for example a dot after the server's name. */
+    Note?: string | null;
 }
 
 const describeLocation = (l: StorageLocation) =>
@@ -91,6 +95,10 @@ export const Component: FC = () => {
         refetchInterval: 30000
     });
     const unreachable = (storage ?? []).filter(l => !l.Reachable);
+
+    // Why they can't be reached (said once each), and, for the ones that can, advice on how they're written that would bite after a restart
+    const whyUnreachable = [ ...new Set(unreachable.flatMap(l => (l.Reason ? [ l.Reason ] : (l.Note ? [ l.Note ] : [])))) ];
+    const adviceForReachable = [ ...new Set((storage ?? []).filter(l => l.Reachable && l.Note).map(l => l.Note as string)) ].slice(0, 2);
     const isLibraryReachable = (name: string) => !unreachable.some(l => l.Library === name);
     // Folders on another computer that Khylo can't open: when Khylo runs as the system account it has no login for
     // them, so offer to connect that share with one
@@ -391,7 +399,7 @@ export const Component: FC = () => {
                 }}
             >
                 {unreachable.length > 0 ? (
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
                         <ErrorOutlineIcon sx={{ color: KHYLO_COLORS.status.danger.fg, fontSize: 20 }} />
                         <Typography variant='body2' sx={{ fontWeight: 600, color: KHYLO_COLORS.textPrimary }}>
                             {unreachable.length === 1 ? 'A library’s storage can’t be reached' : `${unreachable.length} library folders can’t be reached`}
@@ -399,6 +407,11 @@ export const Component: FC = () => {
                         <Typography variant='caption' sx={{ color: KHYLO_COLORS.textMuted }}>
                             {'— ' + unreachable.map(describeLocation).join(', ') + '. Khylo keeps trying to reconnect; titles there won’t play until it’s back.'}
                         </Typography>
+                        {whyUnreachable.length > 0 && (
+                            <Typography variant='caption' sx={{ color: KHYLO_COLORS.status.danger.fg, width: '100%' }}>
+                                {whyUnreachable.join(' ')}
+                            </Typography>
+                        )}
                         {unreachableShare && (
                             <Button
                                 size='small'
@@ -411,7 +424,7 @@ export const Component: FC = () => {
                         )}
                     </Box>
                 ) : (
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
                         <CheckCircleOutlineIcon sx={{ color: KHYLO_COLORS.status.healthy.fg, fontSize: 20 }} />
                         <Typography variant='body2' sx={{ fontWeight: 600, color: KHYLO_COLORS.textPrimary }}>
                             Operational State Normal
@@ -419,6 +432,11 @@ export const Component: FC = () => {
                         <Typography variant='caption' sx={{ color: KHYLO_COLORS.textMuted }}>
                             {storage?.length ? '— Every library’s storage can be reached.' : '— Checking library storage…'}
                         </Typography>
+                        {adviceForReachable.length > 0 && (
+                            <Typography variant='caption' sx={{ color: KHYLO_COLORS.status.warning.fg, width: '100%' }}>
+                                {'Heads-up: ' + adviceForReachable.join(' ')}
+                            </Typography>
+                        )}
                     </Box>
                 )}
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>

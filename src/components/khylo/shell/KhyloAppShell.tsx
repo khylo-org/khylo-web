@@ -7,6 +7,7 @@ import { KhyloTopBar } from './KhyloTopBar';
 import { KhyloMusicModeContext } from './KhyloMusicModeContext';
 import { KhyloMusicSidebar } from '../music/KhyloMusicSidebar';
 import { KhyloMetadataEditorHost } from '../metadata/KhyloMetadataEditor';
+import { KhyloMusicOverlays } from '../music/KhyloMusicOverlays';
 import './KhyloAppShell.scss';
 
 export interface KhyloAppShellProps {
@@ -92,6 +93,8 @@ export const KhyloAppShell: FC<KhyloAppShellProps> = ({ children }) => {
                     </main>
                 </div>
                 <KhyloMetadataEditorHost />
+                {/* Playlist picker, playlist dialog and short messages, for every music button in the app */}
+                <KhyloMusicOverlays />
             </div>
         </KhyloMusicModeContext.Provider>
     );

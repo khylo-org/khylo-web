@@ -85,8 +85,8 @@ const config = {
                 'config.json',
                 'robots.txt',
                 {
-                    from: 'touchicon*.png',
-                    context: path.resolve(__dirname, 'node_modules/@khylo/ux-web/favicons'),
+                    // Khylo's own app icons (the shared UI package's icons are another project's artwork)
+                    from: 'favicons',
                     to: 'favicons'
                 },
                 ...Assets.map(asset => {

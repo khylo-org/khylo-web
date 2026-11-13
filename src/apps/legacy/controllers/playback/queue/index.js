@@ -8,6 +8,7 @@ import 'elements/khylo-collapse/khylo-collapse';
 import 'elements/khylo-input/khylo-input';
 import 'elements/khylo-itemscontainer/khylo-itemscontainer';
 import 'elements/khylo-slider/khylo-slider';
+import './nowPlayingPage.scss';
 
 export default function (view) {
     const remoteControl = new RemoteControl();

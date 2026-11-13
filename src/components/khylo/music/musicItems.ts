@@ -1,7 +1,8 @@
-import { PlaylistEditor } from 'components/playlisteditor/playlisteditor';
 import type { BaseItemDto } from '@khylo/sdk/lib/generated-client/models/base-item-dto';
 import { BaseItemKind } from '@khylo/sdk/lib/generated-client/models/base-item-kind';
 import { MediaType } from '@khylo/sdk/lib/generated-client/models/media-type';
+
+import { openPlaylistDialog, openPlaylistPicker } from './musicUi';
 
 /**
  * Albums, artists, songs and audio playlists belong to the music section,
@@ -15,9 +16,18 @@ export const isMusicItem = (item?: BaseItemDto | null): boolean => {
     return item.Type === BaseItemKind.Playlist && item.MediaType === MediaType.Audio;
 };
 
-/** Opens the playlist editor: a new playlist (no id) or the songs of an existing one. */
+/**
+ * Opens Khylo's own playlist screens: the details of an existing playlist (with an id), the picker to add songs to
+ * a playlist (with songs), or a new playlist (with neither).
+ */
 export const openPlaylistEditor = (options: { items: string[]; id?: string; serverId?: string | null }): void => {
-    void new PlaylistEditor().show({ items: options.items, id: options.id, serverId: options.serverId ?? '' });
+    if (options.id) {
+        openPlaylistDialog({ playlistId: options.id });
+    } else if (options.items.length > 0) {
+        openPlaylistPicker(options.items);
+    } else {
+        openPlaylistDialog();
+    }
 };
 
 /** The music section scrolls inside its main panel, not the window; jump that panel back to the top. */

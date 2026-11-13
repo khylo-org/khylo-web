@@ -87,7 +87,6 @@
     "@fontsource/noto-sans-tc": "5.3.0",
     "@khylo/libass-wasm": "npm:@jellyfin/libass-wasm@4.2.4",
     "@khylo/sdk": "npm:@jellyfin/sdk@0.0.0-unstable.202609160935",
-    "@khylo/ux-web": "npm:@jellyfin/ux-web@1.0.0",
     "@mui/icons-material": "6.5.0",
     "@mui/material": "6.5.0",
     "@mui/x-date-pickers": "7.29.4",

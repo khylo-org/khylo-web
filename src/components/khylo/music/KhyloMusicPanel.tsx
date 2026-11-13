@@ -1,18 +1,22 @@
 import React, { type FC } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 
-import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import PauseIcon from '@mui/icons-material/Pause';
-import SkipPreviousIcon from '@mui/icons-material/SkipPrevious';
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import SensorsIcon from '@mui/icons-material/Sensors';
 import SkipNextIcon from '@mui/icons-material/SkipNext';
-import MusicNoteIcon from '@mui/icons-material/MusicNote';
+import SkipPreviousIcon from '@mui/icons-material/SkipPrevious';
 
 import type { BaseItemDto } from '@khylo/sdk/lib/generated-client/models/base-item-dto';
 import { getLibraryApi } from '@khylo/sdk/lib/utils/api/library-api';
 
 import { useApi } from 'hooks/useApi';
 import { KhyloButton } from '../ui/KhyloButton';
-import { getItemImageUrl, playMediaItem } from '../media/mediaUtils';
+import { playMediaItem } from '../media/mediaUtils';
+import { KmxCover } from './KmxParts';
+import { musicArtUrl } from './musicArt';
+import { useArtistRadio } from './useArtistRadio';
 import { useMusicNowPlaying } from './useMusicNowPlaying';
 
 export interface KhyloMusicPanelProps {
@@ -20,50 +24,45 @@ export interface KhyloMusicPanelProps {
 }
 
 /**
- * Right-hand panel, the track playing now, then the artist it belongs to.
+ * Right-hand panel: the song playing now (or a featured album when nothing is), the artist it belongs to,
+ * and Artist Radio for them.
  */
 export const KhyloMusicPanel: FC<KhyloMusicPanelProps> = ({ featuredAlbum }) => {
     const { api, user } = useApi();
+    const navigate = useNavigate();
+    const radio = useArtistRadio();
     const { item, isPaused, togglePlayPause, next, previous } = useMusicNowPlaying();
 
-    // The artist of the track that is playing
-    const artistId = item?.ArtistItems?.[0]?.Id ?? null;
+    // The artist of the song that is playing, or of the featured album
+    const artistRef = item?.ArtistItems?.[0] ?? featuredAlbum?.AlbumArtists?.[0] ?? featuredAlbum?.ArtistItems?.[0];
+    const artistId = artistRef?.Id ?? null;
     const { data: artist } = useQuery({
-        queryKey: ['KhyloMusicPanelArtist', artistId, user?.Id],
-        queryFn: async () => {
-            if (!api || !artistId) return null;
-            const res = await getLibraryApi(api).getItem({ userId: user?.Id || undefined, itemId: artistId });
-            return res.data as BaseItemDto;
-        },
+        queryKey: [ 'KhyloMusicPanelArtist', artistId, user?.Id ],
+        queryFn: async () => (await getLibraryApi(api!).getItem({ userId: user?.Id, itemId: artistId! })).data as BaseItemDto,
         enabled: Boolean(api && artistId)
     });
 
     // Show what is playing; otherwise offer the featured album
     const shown = item || featuredAlbum;
-    const cover = shown ? getItemImageUrl(api, shown, 'primary', 640) : null;
     const subtitle = item ?
         (item.Artists?.join(', ') || item.AlbumArtist || '') :
         (featuredAlbum?.AlbumArtist || featuredAlbum?.Artists?.[0] || '');
-    const artistPhoto = artist ? getItemImageUrl(api, artist, 'primary', 640) : null;
+    const artistPhoto = artist ? (musicArtUrl(api, artist, 640) ?? musicArtUrl(api, shown, 640)) : null;
 
     return (
         <aside className='khylo-music-panel'>
             <section className='khylo-music-panel__now'>
                 <h2 className='khylo-music-panel__title'>{item ? 'Now playing' : 'Featured'}</h2>
 
-                <div className='khylo-music-panel__cover'>
-                    {cover ? (
-                        <img src={cover} alt={shown?.Name ?? ''} className='khylo-music-panel__cover-img' />
-                    ) : (
-                        <div className='khylo-music-panel__cover-fallback'>
-                            <MusicNoteIcon />
-                        </div>
-                    )}
-                </div>
+                <KmxCover src={musicArtUrl(api, shown, 640)} className='khylo-music-panel__cover' />
 
                 <div className='khylo-music-panel__track'>
-                    <div className='khylo-music-panel__track-name'>{shown?.Name ?? 'Nothing playing'}</div>
-                    <div className='khylo-music-panel__track-artist'>{subtitle}</div>
+                    <div className='khylo-music-panel__track-name' title={shown?.Name ?? ''}>{shown?.Name ?? 'Nothing playing'}</div>
+                    {artistId ? (
+                        <button type='button' className='khylo-music-panel__track-artist' onClick={() => navigate(`/music?artistId=${artistId}`)}>{subtitle}</button>
+                    ) : (
+                        <div className='khylo-music-panel__track-artist'>{subtitle}</div>
+                    )}
                 </div>
 
                 {item ? (
@@ -97,17 +96,26 @@ export const KhyloMusicPanel: FC<KhyloMusicPanelProps> = ({ featuredAlbum }) => 
             {artist && (
                 <section className='khylo-music-panel__about'>
                     <h2 className='khylo-music-panel__heading'>About the artist</h2>
-                    <div className='khylo-music-panel__about-photo'>
-                        {artistPhoto ? (
-                            <img src={artistPhoto} alt={artist.Name ?? ''} className='khylo-music-panel__about-img' />
-                        ) : (
-                            <div className='khylo-music-panel__about-fallback'>{artist.Name?.[0] ?? '♪'}</div>
-                        )}
-                    </div>
-                    <div className='khylo-music-panel__about-name'>{artist.Name}</div>
-                    {artist.Genres && artist.Genres.length > 0 && (
-                        <div className='khylo-music-panel__about-meta'>{artist.Genres.slice(0, 3).join(' · ')}</div>
-                    )}
+                    <button type='button' className='khylo-music-panel__about-card' onClick={() => navigate(`/music?artistId=${artist.Id}`)}>
+                        <KmxCover src={artistPhoto} round person className='khylo-music-panel__about-photo' />
+                        <span className='khylo-music-panel__about-text'>
+                            <span className='khylo-music-panel__about-name'>{artist.Name}</span>
+                            {artist.Genres && artist.Genres.length > 0 && (
+                                <span className='khylo-music-panel__about-meta'>{artist.Genres.slice(0, 3).join(' · ')}</span>
+                            )}
+                        </span>
+                    </button>
+                    <KhyloButton
+                        variant='secondary'
+                        size='md'
+                        fullWidth
+                        icon={<SensorsIcon />}
+                        disabled={radio.busy}
+                        onClick={() => void radio.start(artist)}
+                        title='Their songs, mixed with artists who really sound like them'
+                    >
+                        {radio.busy ? 'Building radio…' : `${artist.Name} Radio`}
+                    </KhyloButton>
                 </section>
             )}
         </aside>

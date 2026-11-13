@@ -94,7 +94,8 @@ class PluginManager {
                 });
             } else {
                 console.debug(`Loading plugin (via dynamic import): ${pluginSpec}`);
-                const pluginResult = await import(/* webpackChunkName: "[request]" */ `../plugins/${pluginSpec}`);
+                // Eager: the plugins all load at start-up, so they ship inside the main file instead of one request each
+                const pluginResult = await import(/* webpackMode: "eager" */ `../plugins/${pluginSpec}`);
                 plugin = new pluginResult.default;
             }
         } else if (pluginSpec.then) {

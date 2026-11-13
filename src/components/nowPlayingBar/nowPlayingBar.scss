@@ -1,9 +1,9 @@
-// Now playing bar: a flat full-width strip.
+// Now playing bar: a dock that floats above the bottom edge, 8px in from the sides.
 // Left: artwork and title. Centre: transport with the progress bar under it. Right: volume and modes.
-// Markup lives in nowPlayingBar.js.
+// Markup lives in nowPlayingBar.js. The music pages keep 98px clear below them (90px, plus the 8px under the dock).
 
-$bar-height: 90px;
-$bar-bg: #151516;
+$bar-height: 82px;
+$bar-bg: #151617;
 $subdued: #B3B3B3;
 
 // The footer only holds this bar, so let the bar define the background
@@ -15,12 +15,13 @@ $subdued: #B3B3B3;
     /* Above everything, except for the video player and popup overlays */
     position: relative;
     height: $bar-height;
-    margin: 0;
+    margin: 0 8px 8px;
     padding: 0 16px;
     box-sizing: border-box;
-    border: none;
-    border-radius: 0;
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 14px;
     background: $bar-bg;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
     color: #FFFFFF;
     text-align: left;
     will-change: transform;
@@ -29,7 +30,7 @@ $subdued: #B3B3B3;
 }
 
 .nowPlayingBar-hidden {
-    transform: translate3d(0, 100%, 0);
+    transform: translate3d(0, calc(100% + 16px), 0);
 }
 
 .nowPlayingBarTop {
@@ -85,10 +86,10 @@ $subdued: #B3B3B3;
 }
 
 .nowPlayingBar .nowPlayingImage {
-    width: 56px;
-    height: 56px;
+    width: 58px;
+    height: 58px;
     flex-shrink: 0;
-    border-radius: 4px;
+    border-radius: 8px;
     background-position: center center;
     background-repeat: no-repeat;
     background-size: cover;
@@ -156,10 +157,10 @@ $subdued: #B3B3B3;
     }
 
     .playPauseButton {
-        width: 32px;
-        height: 32px;
+        width: 36px;
+        height: 36px;
         border-radius: 50%;
-        background: #FFFFFF;
+        background: #F4F1EC;
         color: #000000;
 
         &:hover {

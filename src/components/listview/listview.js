@@ -105,6 +105,9 @@ function getImageUrl(item, size) {
     } else if (item.ParentPrimaryImageTag) {
         options.tag = item.ParentPrimaryImageTag;
         itemId = item.ParentPrimaryImageItemId;
+    } else if (item.Type === 'Audio' && item.AlbumId) {
+        // A song the server sent without a picture tag still shares its album's cover; asking for it beats a blank tile
+        itemId = item.AlbumId;
     }
 
     if (itemId) {

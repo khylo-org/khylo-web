@@ -16,6 +16,11 @@ import { ConnectionState } from './connectionState';
 import getServerAddress from './utils/getServerAddress';
 
 const DEFAULT_CONNECTION_TIMEOUT = 20000;
+// A slow connection (a busy reverse proxy, a phone on weak signal) should not become "Server Unavailable" on the first
+// timeout: the request is tried again, shorter, before giving up. A server that is really down still says so, after about 45 s.
+const MAX_CONNECTION_ATTEMPTS = 3;
+const RETRY_CONNECTION_TIMEOUT = 10000;
+const RETRY_DELAY = 1500;
 
 function updateServerInfo(server, systemInfo) {
     server.Name = systemInfo.ServerName;
@@ -445,12 +450,12 @@ export default class ConnectionManager {
             });
         };
 
-        function getTryConnectPromise(url, connectionMode, state, resolve, reject) {
+        function getTryConnectPromise(url, connectionMode, state, resolve, reject, attempt = 1) {
             console.log('getTryConnectPromise ' + url);
 
             ajax({
                 url: `${url}/System/Info/Public`,
-                timeout: DEFAULT_CONNECTION_TIMEOUT,
+                timeout: attempt === 1 ? DEFAULT_CONNECTION_TIMEOUT : RETRY_CONNECTION_TIMEOUT,
                 type: 'GET',
                 dataType: 'json'
             }).then(
@@ -468,6 +473,16 @@ export default class ConnectionManager {
                 },
                 () => {
                     console.log('Reconnect failed to ' + url);
+
+                    if (!state.resolved && attempt < MAX_CONNECTION_ATTEMPTS) {
+                        console.log(`Trying ${url} again (attempt ${attempt + 1} of ${MAX_CONNECTION_ATTEMPTS})`);
+                        setTimeout(() => {
+                            if (!state.resolved) {
+                                getTryConnectPromise(url, connectionMode, state, resolve, reject, attempt + 1);
+                            }
+                        }, RETRY_DELAY * attempt);
+                        return;
+                    }
 
                     if (!state.resolved) {
                         state.rejects++;

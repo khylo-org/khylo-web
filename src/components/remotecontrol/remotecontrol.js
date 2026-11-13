@@ -20,14 +20,19 @@ import itemContextMenu from '../itemContextMenu';
 import toast from '../toast/toast';
 import { appRouter } from '../router/appRouter';
 import { getDefaultBackgroundClass } from '../cardbuilder/utils/builder';
+import { isAudiobookMediaItem } from '../khylo/media/mediaUtils';
 
 import '../cardbuilder/card.scss';
 import '../../elements/khylo-button/khylo-button';
 import '../../elements/khylo-button/paper-icon-button-light';
 import '../../elements/khylo-itemscontainer/khylo-itemscontainer';
 import './remotecontrol.scss';
+
 import '../../elements/khylo-ratingbutton/khylo-ratingbutton';
 import '../../elements/khylo-slider/khylo-slider';
+
+// 20 minutes, in ticks: longer than this is not a song
+const LONG_FORM_TICKS = 20 * 60 * 10000000;
 
 let showMuteButton = true;
 let showVolumeSlider = true;
@@ -295,8 +300,15 @@ export default function () {
             buttonVisible(context.querySelector('.nowPlayingSecondaryButtons .btnShuffleQueue'), playingVideo);
             buttonVisible(context.querySelector('.nowPlayingSecondaryButtons .btnRepeat'), playingVideo);
         } else {
-            buttonVisible(context.querySelector('.btnRewind'), item != null);
-            buttonVisible(context.querySelector('.btnFastForward'), item != null);
+            // Back 10 s / forward 30 s matter for films, podcasts, audiobooks and long mixes; on a three-minute song they only crowd the controls
+            const longForm = item != null && (
+                playbackManager.isPlayingVideo()
+                || item.Type == 'AudioBook'
+                || isAudiobookMediaItem(item)
+                || (item.RunTimeTicks || 0) > LONG_FORM_TICKS
+            );
+            buttonVisible(context.querySelector('.btnRewind'), longForm);
+            buttonVisible(context.querySelector('.btnFastForward'), longForm);
         }
         const positionSlider = context.querySelector('.nowPlayingPositionSlider');
 
@@ -467,6 +479,7 @@ export default function () {
             html += listView.getListViewHtml({
                 items: items,
                 smallIcon: true,
+                artist: true,
                 action: 'setplaylistindex',
                 enableUserDataButtons: favoritesEnabled,
                 rightButtons: [{

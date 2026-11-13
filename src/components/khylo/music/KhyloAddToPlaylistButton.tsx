@@ -2,13 +2,13 @@ import React, { type FC } from 'react';
 import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd';
 
 import type { BaseItemDto } from '@khylo/sdk/lib/generated-client/models/base-item-dto';
-import { openPlaylistEditor } from './musicItems';
+import { openPlaylistPicker } from './musicUi';
 
 export interface KhyloAddToPlaylistButtonProps {
     item: BaseItemDto;
 }
 
-/** Opens the playlist picker for one track: add to an existing playlist or a new one. */
+/** Opens "Add to playlist" for one song, next to the button: pick a playlist, or make a new one. */
 export const KhyloAddToPlaylistButton: FC<KhyloAddToPlaylistButtonProps> = ({ item }) => (
     <button
         type='button'
@@ -18,7 +18,7 @@ export const KhyloAddToPlaylistButton: FC<KhyloAddToPlaylistButtonProps> = ({ it
         onClick={e => {
             e.stopPropagation();
             if (!item.Id) return;
-            openPlaylistEditor({ items: [item.Id], serverId: item.ServerId });
+            openPlaylistPicker([ item.Id ], { label: [ item.Name, item.Artists?.[0] ].filter(Boolean).join(' · '), anchor: e.currentTarget });
         }}
     >
         <PlaylistAddIcon />

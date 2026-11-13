@@ -22,15 +22,14 @@ import type { BaseItemDto } from '@khylo/sdk/lib/generated-client/models/base-it
 import { BaseItemKind } from '@khylo/sdk/lib/generated-client/models/base-item-kind';
 import { ItemFields } from '@khylo/sdk/lib/generated-client/models/item-fields';
 import { ItemSortBy } from '@khylo/sdk/lib/generated-client/models/item-sort-by';
-import { MediaType } from '@khylo/sdk/lib/generated-client/models/media-type';
 import { SortOrder } from '@khylo/sdk/lib/generated-client/models/sort-order';
 import { getArtistApi } from '@khylo/sdk/lib/utils/api/artist-api';
 import { getLibraryApi } from '@khylo/sdk/lib/utils/api/library-api';
 
 import { useApi } from 'hooks/useApi';
-import { ServerConnections } from 'lib/khylo-apiclient';
 import { getItemImageUrl } from '../media/mediaUtils';
-import { openPlaylistEditor } from './musicItems';
+import { openPlaylistDialog } from './musicUi';
+import { PLAYLISTS_QUERY_KEY, fetchAudioPlaylists } from './playlistApi';
 import './KhyloMusicView.scss';
 
 export type MusicTab = 'listen-now' | 'artists' | 'albums' | 'songs' | 'genres';
@@ -94,22 +93,10 @@ export const KhyloMusicSidebar: FC = () => {
         navigate(`/music?${params.toString()}`);
     };
 
-    // Audio playlists only; video playlists belong to the rest of the app
+    // Audio playlists only; video playlists belong to the rest of the app. Refreshed right after any change (see refreshPlaylists)
     const { data: playlists } = useQuery({
-        queryKey: ['KhyloMusicPlaylists', userId],
-        // The playlist editor closes without telling us, so the list is kept fresh by polling
-        refetchInterval: 10000,
-        queryFn: async () => {
-            if (!api) return [];
-            const res = await getLibraryApi(api).getItems({
-                userId: userId || undefined,
-                includeItemTypes: [BaseItemKind.Playlist],
-                recursive: true,
-                fields: [ItemFields.ChildCount, ItemFields.PrimaryImageAspectRatio],
-                sortBy: [ItemSortBy.SortName]
-            });
-            return (res.data.Items || []).filter((p: BaseItemDto) => p.MediaType === MediaType.Audio);
-        },
+        queryKey: [PLAYLISTS_QUERY_KEY, userId],
+        queryFn: () => (api ? fetchAudioPlaylists(api, userId) : Promise.resolve([])),
         enabled: Boolean(api)
     });
 
@@ -202,7 +189,7 @@ export const KhyloMusicSidebar: FC = () => {
                         className='khylo-music-side__create'
                         aria-label='Create playlist'
                         title='Create playlist'
-                        onClick={() => openPlaylistEditor({ items: [], serverId: ServerConnections.currentApiClient()?.serverId() })}
+                        onClick={() => openPlaylistDialog()}
                     >
                         <AddIcon />
                     </button>

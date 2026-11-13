@@ -1,0 +1,235 @@
+// The Now Playing page on a desktop screen: big cover, title and controls on the left, the queue on the right.
+// The markup and behaviour are the old remote-control page's (index.html, remotecontrol.js); this only lays it out and styles it.
+$text: #f4f1ec;
+$text-2: #b4aea7;
+$muted: #858079;
+$orange: #d97732;
+$line: rgba(255, 255, 255, 0.07);
+
+@media (min-width: 1000px) {
+    .layout-desktop #nowPlayingPage {
+        padding-top: 4.9em !important;
+
+        .remoteControlContent {
+            display: grid;
+            grid-template-columns: minmax(340px, 500px) minmax(0, 1fr);
+            grid-template-areas:
+                'now queue'
+                'remote queue';
+            grid-template-rows: auto 1fr;
+            column-gap: 64px;
+            align-items: start;
+            max-width: 1440px;
+            margin: 0 auto;
+            padding: 20px 48px 56px !important;
+        }
+
+        // ---- the song ----
+        .nowPlayingInfoContainer {
+            grid-area: now;
+            flex-direction: column;
+            align-items: stretch;
+            position: sticky;
+            top: 5.5rem;
+        }
+
+        .nowPlayingPageImageContainer {
+            width: 100%;
+            margin: 0 0 28px !important;
+        }
+
+        .nowPlayingPageImage {
+            display: block;
+            width: 100%;
+            aspect-ratio: 1;
+            height: auto;
+            object-fit: cover;
+            border-radius: 12px;
+            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+        }
+
+        .nowPlayingInfoControls {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .infoContainer {
+            align-items: flex-start;
+            justify-content: space-between;
+        }
+
+        .nowPlayingInfoContainerMedia {
+            margin: 0;
+            min-width: 0;
+        }
+
+        .nowPlayingPageTitle {
+            margin: 0 0 4px !important;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: $muted;
+        }
+
+        .nowPlayingSongName {
+            font-size: 2rem;
+            font-weight: 700 !important;
+            line-height: 1.12;
+            letter-spacing: -0.025em;
+            color: $text;
+        }
+
+        .nowPlayingAlbum,
+        .nowPlayingArtist {
+            margin-top: 6px;
+            font-size: 1rem;
+            color: $text-2;
+        }
+
+        .nowPlayingAlbum a,
+        .nowPlayingArtist a {
+            color: inherit !important;
+
+            &:hover {
+                color: $text !important;
+                text-decoration: underline;
+            }
+        }
+
+        // progress
+        .sliderContainer {
+            align-items: center;
+            gap: 12px;
+            font-size: 0.78rem;
+            color: $muted;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .nowPlayingPositionSliderContainer {
+            margin: 0 !important;
+        }
+
+        // controls: one row, centred, play bigger than the rest
+        .nowPlayingButtonsContainer {
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nowPlayingInfoButtons {
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .nowPlayingInfoButtons .btnPlayStateCommand,
+        .nowPlayingInfoButtons .btnCommand {
+            color: $text-2;
+            transition: color 120ms;
+
+            &:hover {
+                color: $text;
+            }
+        }
+
+        .btnPlayPause {
+            font-size: 3rem !important;
+            color: $text !important;
+            order: 3;
+        }
+
+        .btnPreviousTrack { order: 2; }
+        .btnNextTrack { order: 4; }
+        .btnRewind { order: 1; }
+        .btnFastForward { order: 5; }
+        .btnStop { order: 6; font-size: 0.9em; }
+
+        .nowPlayingSecondaryButtons {
+            justify-content: center;
+            gap: 6px;
+        }
+
+        // ---- the queue ----
+        .playlistSection {
+            grid-area: queue;
+            min-width: 0;
+        }
+
+        .playlistSectionButton {
+            justify-content: flex-end;
+            gap: 4px;
+            margin-bottom: 12px;
+        }
+
+        .nowPlayingPlaylist {
+            padding: 0;
+        }
+
+        .nowPlayingPlaylist .listItem {
+            min-height: 64px;
+            padding: 6px 12px;
+            border-radius: 10px;
+            border: 0;
+            transition: background 120ms;
+
+            &:hover {
+                background: rgba(255, 255, 255, 0.06);
+            }
+        }
+
+        .nowPlayingPlaylist .listItemImage {
+            width: 48px;
+            height: 48px;
+            border-radius: 6px;
+            background-size: cover;
+            background-position: center;
+        }
+
+        .nowPlayingPlaylist .listItemBodyText {
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+        .nowPlayingPlaylist .listItemBodyText.secondary {
+            font-size: 0.8125rem;
+            color: $muted;
+        }
+
+        // Row buttons stay quiet until the row is hovered or focused; the heart shows when it is on
+        .nowPlayingPlaylist .listItemButton,
+        .nowPlayingPlaylist .listViewDragHandle {
+            color: $muted;
+            opacity: 0;
+            transition: opacity 120ms, color 120ms;
+
+            &:hover {
+                color: $text;
+            }
+        }
+
+        .nowPlayingPlaylist .listItem:hover .listItemButton,
+        .nowPlayingPlaylist .listItem:focus-within .listItemButton,
+        .nowPlayingPlaylist .listItem:hover .listViewDragHandle,
+        .nowPlayingPlaylist .listItem:focus-within .listViewDragHandle,
+        .nowPlayingPlaylist .listItemButton.btnUserItemRating-on,
+        .nowPlayingPlaylist .listItemButton[data-likes='true'],
+        .nowPlayingPlaylist .listItemButton[data-isfavorite='true'] {
+            opacity: 1;
+        }
+
+        .nowPlayingPlaylist .listItemBodyText:first-child {
+            color: $text;
+        }
+
+        .nowPlayingPlaylist .listItem:has(.playlistIndexIndicatorImage) .listItemBodyText:first-child {
+            color: $orange;
+        }
+
+        .remoteControlSection {
+            grid-area: remote;
+            margin-top: 28px;
+        }
+    }
+}

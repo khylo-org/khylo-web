@@ -331,7 +331,7 @@ export const KhyloProfilePicker: FC<{ onClose: () => void }> = ({ onClose }) => 
                             {kidsOptions.LiveTvAvailable !== false && <Toggle label='Live TV' description='Channels from your TV service' checked={allowLiveTv} onChange={setAllowLiveTv} />}
                             {!kidsOptions.OwnerHasPin && (
                                 <>
-                                    <label className='khylo-profiles__label' htmlFor='khyloOwnerPin'>A PIN for your profile, so kids can&apos;t switch into it</label>
+                                    <label className='khylo-profiles__label' htmlFor='khyloOwnerPin'>Required: a PIN for your own profile, so kids can&apos;t switch into it</label>
                                     <input
                                         id='khyloOwnerPin'
                                         className='khylo-profiles__input'

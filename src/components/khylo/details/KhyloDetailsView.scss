@@ -1515,7 +1515,8 @@
     }
 
     &__hero-section {
-        min-height: 78vh;
+        // Leaves room for the Play row on a short screen (a 768-pixel laptop) instead of pushing it below the fold
+        min-height: min(78vh, calc(100vh - 260px));
         padding: 140px 56px 48px;
         max-width: none;
         align-items: flex-end;

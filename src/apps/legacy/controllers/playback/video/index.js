@@ -1782,6 +1782,8 @@ export default function (view) {
     view.addEventListener('viewhide', function () {
         clearHideAnimationEventListeners(headerElement);
         headerElement.classList.remove('hide');
+        // The browser tab shouldn't keep the film's name after leaving the player
+        LibraryMenu.setDefaultTitle();
     });
     view.addEventListener('viewdestroy', function () {
         if (self.touchHelper) {

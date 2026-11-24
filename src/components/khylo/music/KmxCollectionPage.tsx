@@ -287,7 +287,7 @@ export const KmxCollectionPage: FC<KmxCollectionPageProps> = ({ item }) => {
                             </button>
                         )}
                         {canEdit && !editing && (
-                            <KhyloButton variant={adding ? 'primary' : 'secondary'} size='lg' icon={<AddIcon />} onClick={() => setAdding(v => !v)}>Add songs</KhyloButton>
+                            <KhyloButton variant={adding ? 'primary' : 'secondary'} size='lg' icon={<AddIcon />} onClick={() => setAdding(v => emptyPlaylist || !v)}>Add songs</KhyloButton>
                         )}
                         {canEdit && (
                             <KhyloButton

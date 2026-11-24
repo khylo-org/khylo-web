@@ -1,4 +1,5 @@
 import loading from 'components/loading/loading';
+import toast from 'components/toast/toast';
 import { ServerConnections } from 'lib/khylo-apiclient';
 
 function onFinish() {
@@ -10,6 +11,10 @@ function onFinish() {
     }).then(function () {
         loading.hide();
         window.location.href = '';
+    }).catch(function () {
+        // The server refuses to finish setup until the administrator has a password
+        loading.hide();
+        toast('Finish setup by giving the administrator a password on the earlier step.');
     });
 }
 

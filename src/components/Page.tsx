@@ -37,6 +37,14 @@ const Page: FC<PropsWithChildren<PageProps>> = ({
     const element = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
+        // Leaving a page puts the browser tab's title back, so pages that don't set their own (like Music) don't keep the last page's, such as "Page not found"
+        const previousTitle = document.title;
+        return () => {
+            document.title = previousTitle;
+        };
+    }, []);
+
+    useEffect(() => {
         // hide active non-react views
         viewManager.hideView();
     }, []);
